@@ -1,71 +1,81 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const transactionSchema = new Schema({
-  transactionId: mongoose.Schema.Types.ObjectId,
-  date: { type: Date, default: Date.now },
-  type: String,
-  amount: Number,
-  currency: String,
-  description: String,
+const addressSchema = new mongoose.Schema({
+  street: String,
+  city: String,
+  state: String,
+  postalCode: String,
+  country: String,
 });
 
-const accountSchema = new Schema({
+const identificationSchema = new mongoose.Schema({
+  type: String,
+  number: String,
+  document: Buffer, // BLOB to store the uploaded identification document
+  documentContentType: String, // Content type of the uploaded document (e.g., image/jpeg)
+});
+
+const facialRecognitionSchema = new mongoose.Schema({
+  verified: Boolean,
+  photo: Buffer, // BLOB to store the user's facial recognition photo or video selfie
+  photoContentType: String, // Content type of the facial recognition photo (e.g., image/jpeg)
+});
+
+const securityQuestionSchema = new mongoose.Schema({
+  question: String,
+  answer: String,
+});
+
+const notificationPreferencesSchema = new mongoose.Schema({
+  email: Boolean,
+  sms: Boolean,
+});
+
+const marketingPreferencesSchema = new mongoose.Schema({
+  optIn: Boolean,
+  optOut: Boolean,
+});
+
+const accountSchema = new mongoose.Schema({
   accountId: mongoose.Schema.Types.ObjectId,
-  accountNumber: { type: String, unique: true, required: true },
+  accountNumber: String,
   type: String,
   balance: Number,
   currency: String,
-  transactions: [transactionSchema],
-});
-
-const userSchema = new Schema({
-  firstName: String,
-  lastName: String,
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  address: {
-    street: String,
-    city: String,
-    state: String,
-    postalCode: String,
-    country: String,
-  },
-  phone: String,
-  dateOfBirth: Date,
-  identification: {
-    type: String,
-    number: String,
-    document: Buffer,
-    documentContentType: String,
-  },
-  facialRecognition: {
-    verified: Boolean,
-    photo: Buffer,
-    photoContentType: String,
-  },
-  kycStatus: String,
-  securityQuestions: [
+  transactions: [
     {
-      question: String,
-      answer: String,
+      transactionId: mongoose.Schema.Types.ObjectId,
+      date: Date,
+      type: String,
+      amount: Number,
+      currency: String,
+      description: String,
     },
   ],
-  notificationPreferences: {
-    email: Boolean,
-    sms: Boolean,
-  },
+});
+
+const userSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
+  email: { type: String, unique: true },
+  password: String,
+  address: addressSchema,
+  phone: String,
+  dateOfBirth: Date,
+  identification: identificationSchema,
+  facialRecognition: facialRecognitionSchema,
+  kycStatus: String, // e.g., "pending", "verified", "rejected"
+  securityQuestions: [securityQuestionSchema],
+  notificationPreferences: notificationPreferencesSchema,
   termsAgreement: Boolean,
-  marketingPreferences: {
-    optIn: Boolean,
-    optOut: Boolean,
-  },
+  marketingPreferences: marketingPreferencesSchema,
   preferredLanguage: String,
   balance: Number,
   currency: String,
   accounts: [accountSchema],
-  DateOfAccountCreation: { type: Date, default: Date.now },
+  dateOfAccountCreation: { type: Date, default: Date.now },
 });
 
 const User = mongoose.model("User", userSchema);
+
 module.exports = User;

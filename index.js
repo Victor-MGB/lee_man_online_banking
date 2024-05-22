@@ -1,12 +1,13 @@
-// BunepSMBFPMlGrpq
-
 const express = require("express");
 const mongoose = require("mongoose");
-// const userRoutes = require("./routes/userRoutes");
-require("dotenv").config()
+const cors = require("cors");
+const userRoutes = require("./routes/userRoutes");
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
+
+app.use(cors());
 
 const mongoURI = process.env.DB_HOST;
 mongoose
@@ -17,7 +18,12 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-// app.use("/api/users", userRoutes);
+  app.use((req, res, next) => {
+    console.log(`Request URL: ${req.url}, Request Method: ${req.method}`);
+    next();
+  });
+
+app.use("/api/users", userRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
