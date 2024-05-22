@@ -9,14 +9,23 @@ app.use(express.json());
 
 app.use(cors());
 
-const mongoURI = process.env.DB_HOST;
+// const mongoURI = process.env.DB_HOST;
+// mongoose
+//   .connect(mongoURI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   })
+//   .then(() => console.log("MongoDB connected"))
+//   .catch((err) => console.log(err));
+
 mongoose
-  .connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+  .connect(process.env.DB_HOST)
+  .then(() => {
+    console.log("Connected to MongoDB");
   })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    console.error("Database connection error:", err);
+  });
 
   app.use((req, res, next) => {
     console.log(`Request URL: ${req.url}, Request Method: ${req.method}`);
