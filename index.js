@@ -1,23 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 const cors = require("cors");
-const userRoutes = require("./routes/userRoutes");
+const registrationRoute = require("./routes/userRoutes");
+
 require("dotenv").config();
 
 const app = express();
-app.use(express.json());
+const port = process.env.PORT || 4000;
 
+// Middleware
+app.use(bodyParser.json());
 app.use(cors());
 
-// const mongoURI = process.env.DB_HOST;
-// mongoose
-//   .connect(mongoURI, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//   })
-//   .then(() => console.log("MongoDB connected"))
-//   .catch((err) => console.log(err));
 
+// Database connection
 mongoose
   .connect(process.env.DB_HOST)
   .then(() => {
@@ -27,14 +24,16 @@ mongoose
     console.error("Database connection error:", err);
   });
 
-  app.use((req, res, next) => {
-    console.log(`Request URL: ${req.url}, Request Method: ${req.method}`);
-    next();
-  });
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}, Request Method: ${req.method}`);
+  next();
+});
 
-app.use("/api/users", userRoutes);
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Routes
+app.use("/api", registrationRoute);
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

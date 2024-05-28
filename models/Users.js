@@ -1,91 +1,54 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcryptjs');
 
 const addressSchema = new mongoose.Schema({
-  street: String,
-  city: String,
-  state: String,
-  postalCode: String,
-  country: String,
-});
-
-const identificationSchema = new mongoose.Schema({
-  type: String,
-  number: String,
-  document: Buffer, // BLOB to store the uploaded identification document
-  documentContentType: String, // Content type of the uploaded document (e.g., image/jpeg)
-});
-
-const facialRecognitionSchema = new mongoose.Schema({
-  verified: Boolean,
-  photo: Buffer, // BLOB to store the user's facial recognition photo or video selfie
-  photoContentType: String, // Content type of the facial recognition photo (e.g., image/jpeg)
-});
-
-const securityQuestionSchema = new mongoose.Schema({
-  question: String,
-  answer: String,
-});
-
-const notificationPreferencesSchema = new mongoose.Schema({
-  email: Boolean,
-  sms: Boolean,
-});
-
-const marketingPreferencesSchema = new mongoose.Schema({
-  optIn: Boolean,
-  optOut: Boolean,
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  postalCode: { type: String, required: true },
+  country: { type: String, required: true },
 });
 
 const accountSchema = new mongoose.Schema({
-  accountId: mongoose.Schema.Types.ObjectId,
-  accountNumber: String,
-  type: String,
-  balance: Number,
-  currency: String,
+  accountId: { type: mongoose.Types.ObjectId, required: true },
+  accountNumber: { type: String, required: true },
+  type: { type: String, required: true },
+  balance: { type: Number, default: 0 },
+  currency: { type: String, required: true },
   transactions: [
     {
-      transactionId: mongoose.Schema.Types.ObjectId,
-      date: Date,
-      type: String,
-      amount: Number,
-      currency: String,
-      description: String,
+      transactionId: { type: mongoose.Types.ObjectId, required: true },
+      date: { type: Date, required: true },
+      type: { type: String, required: true },
+      amount: { type: Number, required: true },
+      currency: { type: String, required: true },
+      description: { type: String, required: true },
     },
   ],
 });
 
 const userSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  email: { type: String, unique: true },
-  password: String,
-  address: addressSchema,
-  phone: String,
-  dateOfBirth: Date,
-  identification: identificationSchema,
-  facialRecognition: facialRecognitionSchema,
-  kycStatus: String, // e.g., "pending", "verified", "rejected"
-  securityQuestions: [securityQuestionSchema],
-  notificationPreferences: notificationPreferencesSchema,
-  termsAgreement: Boolean,
-  marketingPreferences: marketingPreferencesSchema,
-  preferredLanguage: String,
-  balance: Number,
-  currency: String,
+  firstName: { type: String, required: true },
+  middleName: { type: String },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phoneNumber: { type: String, required: true },
+  gender: { type: String, required: true },
+  dateOfBirth: { type: Date, required: true },
+  accountType: { type: String, required: true },
+  address: { type: addressSchema, required: true },
+  postalCode: { type: String, required: true },
+  state: { type: String, required: true },
+  country: { type: String, required: true },
+  currency: { type: String, required: true },
+  password: { type: String, required: true },
+  accountPin: { type: String, required: true },
+  agree: { type: Boolean, required: true },
+  kycStatus: { type: String, default: "pending" },
+  balance: { type: Number, default: 0 },
   accounts: [accountSchema],
   dateOfAccountCreation: { type: Date, default: Date.now },
+  preferredLanguage: { type: String, required: true },
+  termsAgreement: { type: Boolean, required: true },
 });
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-const User = mongoose.model("User", userSchema);
-
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);
