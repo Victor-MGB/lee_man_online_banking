@@ -44,11 +44,14 @@ const userSchema = new mongoose.Schema({
   accountPin: { type: String, required: true },
   agree: { type: Boolean, required: true },
   kycStatus: { type: String, default: "pending" },
+  kycDocuments: { type: Array, default: [] }, // New field for KYC documents
   balance: { type: Number, default: 0 },
   accounts: [accountSchema],
   dateOfAccountCreation: { type: Date, default: Date.now },
   preferredLanguage: { type: String, required: true },
   termsAgreement: { type: Boolean, required: true },
+  otp: { type: String }, // Store OTP here
+  otpExpires: { type: Date }, // Store OTP expiration time here
 });
 
 module.exports = mongoose.model("User", userSchema);
