@@ -63,7 +63,6 @@ const userSchema = new mongoose.Schema({
   accountPin: { type: String, required: true },
   agree: { type: Boolean, default: true, required: true },
   kycStatus: { type: String, default: "pending" },
-  kycDocuments: { type: Array, default: [] },
   balance: { type: Number, default: 0 },
   accounts: [accountSchema],
   withdrawals: [withdrawalSchema],

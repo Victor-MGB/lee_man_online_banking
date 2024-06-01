@@ -551,6 +551,94 @@ router.get("/recent-transactions", async (req, res) => {
   }
 });
 
+router.post("/update-balance", async (req, res) => {
+  const { accountNumber, newBalance } = req.body;
+
+  if (!accountNumber || typeof newBalance !== "number") {
+    return res
+      .status(400)
+      .json({ message: "Account number and new balance are required" });
+  }
+
+  try {
+    const user = await User.findOne({
+      "accounts.accountNumber": accountNumber,
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User with given account number not found" });
+    }
+
+    const accountIndex = user.accounts.findIndex(
+      (acc) => acc.accountNumber === accountNumber
+    );
+    if (accountIndex === -1) {
+      return res.status(404).json({ message: "Account not found" });
+    }
+
+    user.accounts[accountIndex].balance = newBalance;
+    await user.save();
+
+    res.status(200).json({
+      message: "Account balance updated successfully",
+      account: user.accounts[accountIndex],
+    });
+  } catch (error) {
+    console.error("Error updating balance:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/send-notification", async (req, res) => {
+  const { email, subject, message } = req.body;
+
+  if (!email || !subject || !message) {
+    return res
+      .status(400)
+      .json({ message: "Email, subject, and message are required" });
+  }
+
+  try {
+    // Send email
+    await sendEmail(email, subject, message);
+    res.status(200).json({ message: "Notification sent successfully" });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    res
+      .status(500)
+      .json({ message: "Error sending notification. Please try again later." });
+  }
+});
+
+router.get("/balance/:accountNumber", async (req, res) => {
+  const { accountNumber } = req.params;
+
+  try {
+    const user = await User.findOne({
+      "accounts.accountNumber": accountNumber,
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User with given account number not found" });
+    }
+
+    const account = user.accounts.find(
+      (acc) => acc.accountNumber === accountNumber
+    );
+    if (!account) {
+      return res.status(404).json({ message: "Account not found" });
+    }
+
+    res.status(200).json({ balance: account.balance });
+  } catch (error) {
+    console.error("Error getting balance:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
 
 
 // router.get("/user-transaction/:userId/:transactionId", async (req, res) => {

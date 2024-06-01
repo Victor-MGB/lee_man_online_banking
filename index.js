@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const registrationRoute = require("./routes/userRoutes");
 
+
 require("dotenv").config();
 
 const app = express();
