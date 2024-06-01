@@ -21,8 +21,6 @@ const generateAccountNumber = async () => {
   return accountNumber;
 };
 
-
-
 router.post("/register", async (req, res) => {
   const {
     firstName,
@@ -39,34 +37,56 @@ router.post("/register", async (req, res) => {
     country,
     currency,
     password,
+    confirmPassword,
     accountPin,
-    agree,
-    kycDocuments,
-    preferredLanguage,
-    termsAgreement,
   } = req.body;
 
-  if (!termsAgreement) {
-    return res.status(400).json({ message: "You must agree to the terms and conditions" });
+  // Validate required fields
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phoneNumber ||
+    !gender ||
+    !dateOfBirth ||
+    !accountType ||
+    !address ||
+    !postalCode ||
+    !state ||
+    !country ||
+    !currency ||
+    !password ||
+    !confirmPassword ||
+    !accountPin
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  // Validate password confirmation
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match" });
   }
 
   try {
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    // Generate OTP
     const otp = otpGenerator.generate(6, {
       upperCase: false,
       specialChars: false,
       alphabets: false,
     });
 
+    // Hash password and account pin
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAccountPin = await bcrypt.hash(accountPin, 10);
-    console.log("Hashed password:", hashedPassword); // Log hashed password
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
+    // Create new user
     const user = new User({
       firstName,
       middleName,
@@ -83,17 +103,16 @@ router.post("/register", async (req, res) => {
       currency,
       password: hashedPassword,
       accountPin: hashedAccountPin,
-      agree,
+      agree: true,
       kycStatus: "pending",
-      kycDocuments,
-      preferredLanguage,
-      termsAgreement,
       otp,
       otpExpires,
     });
 
+    // Save user to the database
     await user.save();
 
+    // Email content
     const emailSubject = "OTP for Account Registration";
     const emailText = `Dear ${firstName},
 
@@ -109,34 +128,50 @@ Thank you for choosing Central City Bank for your banking needs.
 The Central City Bank Team
 `;
 
-    sendEmail(email, emailSubject, emailText);
+    const emailHtml = `<p>Dear ${firstName},</p>
+<p>We are delighted to assist you in completing your account registration with Central City Bank.</p>
+<p>Please find below your One-Time Password (OTP) required for account registration:</p>
+<p><strong>OTP: ${otp}</strong></p>
+<p>This OTP is valid for a limited time. Please use it promptly to finalize your registration process.</p>
+<p>If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
+<p>Thank you for choosing Central City Bank for your banking needs.</p>
+<p>The Central City Bank Team</p>`;
 
-    res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        firstName,
-        middleName,
-        lastName,
-        email,
-        phoneNumber,
-        gender,
-        dateOfBirth,
-        accountType,
-        address,
-        postalCode,
-        state,
-        country,
-        currency,
-        preferredLanguage,
-        otp,
-        kycStatus: "pending"
-      },
-    });
+    // Send email
+    try {
+      await sendEmail(email, emailSubject, emailText, emailHtml);
+      res.status(201).json({
+        message: "User registered successfully",
+        user: {
+          firstName,
+          middleName,
+          lastName,
+          email,
+          phoneNumber,
+          gender,
+          dateOfBirth,
+          accountType,
+          address,
+          postalCode,
+          state,
+          country,
+          currency,
+          otp,
+          kycStatus: "pending",
+        },
+      });
+    } catch (emailError) {
+      console.error("Error during email sending:", emailError);
+      res
+        .status(500)
+        .json({ message: "Error sending email. Please try again later." });
+    }
   } catch (error) {
     console.error("Error during registration:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 router.get("/",(req,res)=>{
     res.send("hello world")
@@ -190,14 +225,20 @@ router.post("/verify-otp", async (req, res) => {
 
     // Compose email
     const emailSubject = "Your New Account Information";
-    const emailText = `Dear ${user.firstName} ${user.lastName},\n\nWe are thrilled to inform you that your account has been successfully created with our platform. Your account details are provided below:\n\nAccount Number: ${accountNumber}\n\nPlease keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at centralcitybank0@gmail.com 
-.\n\nThank you for choosing our platform.\n\nBest regards,\n Central City Bank
-USA
-centralcitybank0@gmail.com 
-+12074021612`;
+    const emailHtml = `
+      <p>Dear ${user.firstName} ${user.lastName},</p>
+      <p>We are thrilled to inform you that your account has been successfully created with our platform. Your account details are provided below:</p>
+      <p><strong>Account Number:</strong> ${accountNumber}</p>
+      <p>Please keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
+      <p>Thank you for choosing our platform.</p>
+      <p>Best regards,<br/>Central City Bank</p>
+      <p>USA<br/>
+      centralcitybank0@gmail.com<br/>
+      +12074021612</p>
+    `;
 
     // Send account number to the user's email
-    sendEmail(email, emailSubject, emailText);
+    sendEmail(email, emailSubject, "", emailHtml);
 
     // Return success message along with user details and account number
     res.status(201).json({
@@ -326,7 +367,6 @@ router.get("/users", async (req, res) => {
   }
 });
 
-
 router.post("/withdraw", async (req, res) => {
   const { email, accountPin, amount } = req.body;
 
@@ -359,20 +399,25 @@ router.post("/withdraw", async (req, res) => {
     // Deduct the amount from account balance
     account.balance -= amount;
 
-    // Add transaction record
-    account.transactions.push({
+    // Add withdrawal transaction record
+    const withdrawalTransaction = {
       transactionId: new mongoose.Types.ObjectId(),
       date: new Date(),
       type: "withdrawal",
       amount: amount,
       currency: account.currency,
       description: "Withdrawal",
-    });
+    };
 
-    // Save the user document
+    // Add transaction record to account
+    account.transactions.push(withdrawalTransaction);
+
+    // Save the user document to update the account details
     await user.save();
 
-    res.status(200).json({ message: "Withdrawal successful", account });
+    res
+      .status(200)
+      .json({ message: "Withdrawal successful", withdrawalTransaction });
   } catch (error) {
     console.error("Error during withdrawal:", error);
     res.status(500).json({ message: "Server error. Please try again later." });

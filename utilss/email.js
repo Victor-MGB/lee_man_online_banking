@@ -10,22 +10,28 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = (to, subject, text) => {
-  const mailOptions = {
-    from: {
-      name: "CentralCityBank", // Enclose in quotes
-      address: process.env.EMAIL_USER,
-    },
-    to,
-    subject,
-    text,
-  };
+const sendEmail = (to, subject, text, html) => {
+  return new Promise((resolve, reject) => {
+    const mailOptions = {
+      from: {
+        name: "CentralCityBank",
+        address: process.env.EMAIL_USER,
+      },
+      to,
+      subject,
+      text,
+      html,
+    };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      return console.log(error);
-    }
-    console.log("Email sent: " + info.response);
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        reject(error);
+      } else {
+        console.log("Email sent:", info.response);
+        resolve(info.response);
+      }
+    });
   });
 };
 

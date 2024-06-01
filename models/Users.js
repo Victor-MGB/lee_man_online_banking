@@ -61,17 +61,15 @@ const userSchema = new mongoose.Schema({
   currency: { type: String, required: true },
   password: { type: String, required: true },
   accountPin: { type: String, required: true },
-  agree: { type: Boolean, required: true },
+  agree: { type: Boolean, default: true, required: true },
   kycStatus: { type: String, default: "pending" },
-  kycDocuments: { type: Array, default: [] }, // New field for KYC documents
+  kycDocuments: { type: Array, default: [] },
   balance: { type: Number, default: 0 },
   accounts: [accountSchema],
-  withdrawals: [withdrawalSchema], // Add withdrawals array
+  withdrawals: [withdrawalSchema],
   dateOfAccountCreation: { type: Date, default: Date.now },
-  preferredLanguage: { type: String, required: true },
-  termsAgreement: { type: Boolean, required: true },
-  otp: { type: String }, // Store OTP here
-  otpExpires: { type: Date }, // Store OTP expiration time here
+  otp: { type: String },
+  otpExpires: { type: Date },
 });
 
 module.exports = mongoose.model("User", userSchema);
