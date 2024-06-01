@@ -138,6 +138,9 @@ The Central City Bank Team
   }
 });
 
+router.get("/",(req,res)=>{
+    res.send("hello world")
+})
 
 router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -323,6 +326,104 @@ router.get("/users", async (req, res) => {
   }
 });
 
+
+router.post("/withdraw", async (req, res) => {
+  const { email, accountPin, amount } = req.body;
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Verify account pin
+    const isMatch = await bcrypt.compare(accountPin, user.accountPin);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid account pin" });
+    }
+
+    // Assume a single default account for simplicity
+    const account = user.accounts[0];
+    if (!account) {
+      return res
+        .status(400)
+        .json({ message: "No account found for this user" });
+    }
+
+    // Check if sufficient balance is available
+    if (account.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    // Deduct the amount from account balance
+    account.balance -= amount;
+
+    // Add transaction record
+    account.transactions.push({
+      transactionId: new mongoose.Types.ObjectId(),
+      date: new Date(),
+      type: "withdrawal",
+      amount: amount,
+      currency: account.currency,
+      description: "Withdrawal",
+    });
+
+    // Save the user document
+    await user.save();
+
+    res.status(200).json({ message: "Withdrawal successful", account });
+  } catch (error) {
+    console.error("Error during withdrawal:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/deposit", async (req, res) => {
+  const { accountNumber, accountPin, amount } = req.body;
+
+  try {
+    // Find user by account number
+    const user = await User.findOne({ "accounts.accountNumber": accountNumber });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Verify account pin
+    const isMatch = await bcrypt.compare(accountPin, user.accountPin);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid account pin" });
+    }
+
+    // Find the account by account number
+    const account = user.accounts.find(acc => acc.accountNumber === accountNumber);
+    if (!account) {
+      return res.status(400).json({ message: "Account not found" });
+    }
+
+    // Deposit funds into the account
+    account.balance += amount;
+
+    // Add transaction record
+    account.transactions.push({
+      transactionId: new mongoose.Types.ObjectId(),
+      date: new Date(),
+      type: "deposit",
+      amount: amount,
+      currency: account.currency,
+      description: "Deposit",
+    });
+
+    // Save the user document
+    await user.save();
+
+    res.status(200).json({ message: "Deposit successful", account });
+  } catch (error) {
+    console.error("Error during deposit:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
 router.post("/update-transaction", async (req, res) => {
   const { userId, accountId, transaction } = req.body;
 
@@ -380,46 +481,72 @@ router.post("/update-transaction", async (req, res) => {
   }
 });
 
-
-router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
-  const { userId, transactionId } = req.params;
+router.get("/recent-transactions", async (req, res) => {
+  const { userId } = req.body; // Assuming userId is provided in the request
 
   try {
     // Find user by userId
     const user = await User.findById(userId);
-
     if (!user) {
-      return res.status(404).json({ message: "User not found", status: 404 });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Find the transaction in user's accounts transactions array
-    let transaction;
-    user.accounts.forEach((account) => {
-      transaction = account.transactions.find(
-        (trans) => trans._id.toString() === transactionId
-      );
-      if (transaction) return; // Break out of loop if transaction found
-    });
+    // Get the most recent transactions
+    const recentTransactions = user.accounts
+      .reduce((acc, curr) => {
+        return acc.concat(curr.transactions);
+      }, [])
+      .sort((a, b) => b.date - a.date)
+      .slice(0, 10); // Get the top 10 recent transactions
 
-    if (!transaction) {
-      return res
-        .status(404)
-        .json({ message: "Transaction not found", status: 404 });
-    }
-
-    // If user and transaction are found, return the transaction
-    res.status(200).json({
-      message: "Transaction retrieved successfully",
-      transaction: transaction,
-      status: 200,
-    });
+    res.status(200).json({ recentTransactions });
   } catch (error) {
-    console.error("Error fetching user transaction:", error);
-    res
-      .status(500)
-      .json({ message: "Server error. Please try again later.", status: 500 });
+    console.error("Error fetching recent transactions:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
+
+
+// router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
+//   const { userId, transactionId } = req.params;
+
+//   try {
+//     // Find user by userId
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found", status: 404 });
+//     }
+
+//     // Find the transaction in user's accounts transactions array
+//     let transaction;
+//     user.accounts.forEach((account) => {
+//       transaction = account.transactions.find(
+//         (trans) => trans._id.toString() === transactionId
+//       );
+//       if (transaction) return; // Break out of loop if transaction found
+//     });
+
+//     if (!transaction) {
+//       return res
+//         .status(404)
+//         .json({ message: "Transaction not found", status: 404 });
+//     }
+
+//     // If user and transaction are found, return the transaction
+//     res.status(200).json({
+//       message: "Transaction retrieved successfully",
+//       transaction: transaction,
+//       status: 200,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching user transaction:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Server error. Please try again later.", status: 500 });
+//   }
+// });
 
 
 router.delete("/:userId", async (req, res) => {

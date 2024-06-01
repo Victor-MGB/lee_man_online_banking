@@ -26,6 +26,25 @@ const accountSchema = new mongoose.Schema({
   ],
 });
 
+const withdrawalSchema = new mongoose.Schema({
+  withdrawalId: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+    default: new mongoose.Types.ObjectId(),
+  },
+  accountId: { type: mongoose.Types.ObjectId, required: true },
+  accountNumber: { type: String, required: true },
+  amount: { type: Number, required: true },
+  currency: { type: String, required: true },
+  date: { type: Date, default: Date.now },
+  status: {
+    type: String,
+    enum: ["pending", "completed", "failed"],
+    default: "pending",
+  },
+  description: { type: String },
+});
+
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   middleName: { type: String },
@@ -47,6 +66,7 @@ const userSchema = new mongoose.Schema({
   kycDocuments: { type: Array, default: [] }, // New field for KYC documents
   balance: { type: Number, default: 0 },
   accounts: [accountSchema],
+  withdrawals: [withdrawalSchema], // Add withdrawals array
   dateOfAccountCreation: { type: Date, default: Date.now },
   preferredLanguage: { type: String, required: true },
   termsAgreement: { type: Boolean, required: true },

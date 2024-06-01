@@ -13,7 +13,6 @@ const port = process.env.PORT || 4000;
 app.use(bodyParser.json());
 app.use(cors());
 
-
 // Database connection
 mongoose
   .connect(process.env.DB_HOST)
