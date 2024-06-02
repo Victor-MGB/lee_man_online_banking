@@ -41,7 +41,6 @@ router.post("/register", async (req, res) => {
     accountPin,
   } = req.body;
 
-  // Validate required fields
   if (
     !firstName ||
     !lastName ||
@@ -59,11 +58,13 @@ router.post("/register", async (req, res) => {
     !confirmPassword ||
     !accountPin
   ) {
+    console.log("Validation failed: Missing fields");
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Validate password confirmation
   if (password !== confirmPassword) {
+    console.log("Validation failed: Passwords do not match");
     return res.status(400).json({ message: "Passwords do not match" });
   }
 
@@ -71,6 +72,7 @@ router.post("/register", async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log("Validation failed: User already exists");
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -171,6 +173,7 @@ The Central City Bank Team
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 
 router.get("/",(req,res)=>{
