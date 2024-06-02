@@ -41,6 +41,7 @@ router.post("/register", async (req, res) => {
     accountPin,
   } = req.body;
 
+  // Validate required fields
   if (
     !firstName ||
     !lastName ||
@@ -173,6 +174,7 @@ The Central City Bank Team
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 
 
