@@ -41,6 +41,8 @@ router.post("/register", async (req, res) => {
     accountPin,
   } = req.body;
 
+  console.log("Received registration request with data:", req.body);
+
   // Validate required fields
   if (
     !firstName ||
@@ -73,7 +75,7 @@ router.post("/register", async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log("Validation failed: User already exists");
+      console.log("Validation failed: User already exists with email:", email);
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -114,6 +116,8 @@ router.post("/register", async (req, res) => {
 
     // Save user to the database
     await user.save();
+
+    console.log("User registered successfully:", user);
 
     // Email content
     const emailSubject = "OTP for Account Registration";
@@ -174,9 +178,6 @@ The Central City Bank Team
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-
-
 
 router.get("/",(req,res)=>{
     res.send("hello world")
