@@ -24,46 +24,8 @@ const generateToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
-// Admin registration (sign up)
-app.post("/signup", async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      return res.status(409).json({ error: "Admin already exists" });
-    }
-
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new admin object
-    const newAdmin = new Admin({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
-    // Save the new admin
-    await newAdmin.save();
-
-    // Return success message along with the admin details
-    res.status(201).json({
-      message: "Admin registered successfully",
-      admin: {
-        id: newAdmin._id,
-        username: newAdmin.username,
-        email: newAdmin.email,
-      },
-    });
-  } catch (error) {
-    console.error("Error during admin registration:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.post("/login", async (req, res) => {
+// Admin login
+app.post("/admin/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -73,27 +35,24 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ error: "No records found" });
     }
 
-    // Check if custom password is set and validate accordingly
-    const isMatch = await bcrypt.compare(
-      password,
-      admin.customPassword || admin.password
-    );
+    // Check password
+    const isMatch = await bcrypt.compare(password, admin.password);
     if (isMatch) {
-      // Generate a JWT token
-      const token = generateToken({ id: admin._id, email: admin.email });
+      // Generate a token with 20 characters
+      const token = IdGen(20);
 
-      // Save the token to the admin document (optional, based on use case)
+      // You may want to save the token in the user document for future use
       admin.token = token;
       await admin.save();
 
       // Return success message along with the admin object and token
-      return res.status(200).json({
+      res.status(200).json({
         message: "Login successful",
-        admin: { id: admin._id, username: admin.username, email: admin.email },
-        token,
+        admin: admin,
+        token: token,
       });
     } else {
-      return res.status(401).json({ error: "Wrong password" });
+      res.status(401).json({ error: "Wrong password" });
     }
   } catch (error) {
     console.error("Error during admin login:", error);
@@ -101,43 +60,34 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
-app.post("/change-password", async (req, res) => {
+// Endpoint for admin registration (sign up)
+app.post("/admin/signup", async (req, res) => {
   try {
-    const { email, currentPassword, newPassword } = req.body;
+    const { username, email, password } = req.body;
 
-    // Find admin by email
-    const admin = await Admin.findOne({ email });
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
+    // Check if admin already exists
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return res.status(409).json({ message: "Admin already exists" });
     }
 
-    // Check if the current password matches
-    const isMatch = await bcrypt.compare(
-      currentPassword,
-      admin.customPassword || admin.password
-    );
-    if (!isMatch) {
-      return res.status(401).json({ message: "Incorrect current password" });
-    }
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (newPassword) {
-      // Hash the new password before saving
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    // Create new admin with hashed password
+    const newAdmin = await new Admin({
+      username,
+      email,
+      password: hashedPassword, // Store the hashed password
+    }).save();
 
-      // Update the admin's custom password
-      admin.customPassword = hashedNewPassword;
-      await admin.save();
-
-      res.status(200).json({ message: "Password changed successfully" });
-    } else {
-      res.status(400).json({ message: "New password is required" });
-    }
+    res
+      .status(201)
+      .json({ message: "Admin registered successfully", newAdmin });
   } catch (error) {
-    console.error("Error changing password:", error);
+    console.error("Error during admin registration:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 module.exports = app;
