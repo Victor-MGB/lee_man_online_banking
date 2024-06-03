@@ -14,6 +14,10 @@ const AdminSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  customPassword: {
+    type: String, // This field will store the custom password once set by the admin
+    required: false,
+  },
 });
 
 const Admin = mongoose.model("Admin", AdminSchema);

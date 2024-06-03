@@ -63,7 +63,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Admin login
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -74,7 +73,7 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ error: "No records found" });
     }
 
-    // Check password
+    // Check if custom password is set and validate accordingly
     const isMatch = await bcrypt.compare(
       password,
       admin.customPassword || admin.password
@@ -102,7 +101,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Admin password change
+
 app.post("/change-password", async (req, res) => {
   try {
     const { email, currentPassword, newPassword } = req.body;
@@ -122,18 +121,23 @@ app.post("/change-password", async (req, res) => {
       return res.status(401).json({ message: "Incorrect current password" });
     }
 
-    // Hash the new password before saving
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    if (newPassword) {
+      // Hash the new password before saving
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update the admin's custom password
-    admin.customPassword = hashedNewPassword;
-    await admin.save();
+      // Update the admin's custom password
+      admin.customPassword = hashedNewPassword;
+      await admin.save();
 
-    res.status(200).json({ message: "Password changed successfully" });
+      res.status(200).json({ message: "Password changed successfully" });
+    } else {
+      res.status(400).json({ message: "New password is required" });
+    }
   } catch (error) {
     console.error("Error changing password:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 module.exports = app;
