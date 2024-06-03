@@ -175,8 +175,6 @@ The Central City Bank Team
   }
 });
 
-
-
 router.get("/",(req,res)=>{
     res.send("hello world")
 })
@@ -643,7 +641,6 @@ router.get("/balance/:accountNumber", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
 
 // router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
 //   const { userId, transactionId } = req.params;
