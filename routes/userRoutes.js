@@ -581,18 +581,22 @@ router.post("/update-balance", async (req, res) => {
     }
 
     user.accounts[accountIndex].balance += amountToAdd;
+
+    // Update the user's primary balance as the sum of all account balances
+    user.balance = user.accounts.reduce((acc, account) => acc + account.balance, 0);
+
     await user.save();
 
     res.status(200).json({
       message: "Account balance updated successfully",
       account: user.accounts[accountIndex],
+      totalBalance: user.balance
     });
   } catch (error) {
     console.error("Error updating balance:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
 
 router.post("/send-notification", async (req, res) => {
   const { email, subject, message } = req.body;
