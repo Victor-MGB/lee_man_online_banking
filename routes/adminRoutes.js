@@ -24,6 +24,7 @@ const generateToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
+// Admin registration (sign up)
 app.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -62,7 +63,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// Endpoint for admin login
+// Admin login
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -73,47 +74,27 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ error: "No records found" });
     }
 
-    // Check if admin has a custom password set
-    if (!admin.customPassword) {
-      // Check password
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (isMatch) {
-        // Generate a JWT token
-        const token = generateToken({ id: admin._id, email: admin.email });
+    // Check password
+    const isMatch = await bcrypt.compare(
+      password,
+      admin.customPassword || admin.password
+    );
+    if (isMatch) {
+      // Generate a JWT token
+      const token = generateToken({ id: admin._id, email: admin.email });
 
-        // Save the token to the admin document (optional, based on use case)
-        admin.token = token;
-        await admin.save();
+      // Save the token to the admin document (optional, based on use case)
+      admin.token = token;
+      await admin.save();
 
-        // Return success message along with the admin object and token
-        return res.status(200).json({
-          message: "Login successful",
-          admin: { id: admin._id, username: admin.username, email: admin.email },
-          token,
-        });
-      } else {
-        return res.status(401).json({ error: "Wrong password" });
-      }
+      // Return success message along with the admin object and token
+      return res.status(200).json({
+        message: "Login successful",
+        admin: { id: admin._id, username: admin.username, email: admin.email },
+        token,
+      });
     } else {
-      // Check if admin has a custom password set
-      const isMatch = await bcrypt.compare(password, admin.customPassword);
-      if (isMatch) {
-        // Generate a JWT token
-        const token = generateToken({ id: admin._id, email: admin.email });
-
-        // Save the token to the admin document (optional, based on use case)
-        admin.token = token;
-        await admin.save();
-
-        // Return success message along with the admin object and token
-        return res.status(200).json({
-          message: "Login successful",
-          admin: { id: admin._id, username: admin.username, email: admin.email },
-          token,
-        });
-      } else {
-        return res.status(401).json({ error: "Wrong password" });
-      }
+      return res.status(401).json({ error: "Wrong password" });
     }
   } catch (error) {
     console.error("Error during admin login:", error);
@@ -121,15 +102,24 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Endpoint for admin password change
+// Admin password change
 app.post("/change-password", async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
+    const { email, currentPassword, newPassword } = req.body;
 
     // Find admin by email
     const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Check if the current password matches
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      admin.customPassword || admin.password
+    );
+    if (!isMatch) {
+      return res.status(401).json({ message: "Incorrect current password" });
     }
 
     // Hash the new password before saving
@@ -145,6 +135,5 @@ app.post("/change-password", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 module.exports = app;
