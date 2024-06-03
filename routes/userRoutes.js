@@ -554,12 +554,12 @@ router.get("/recent-transactions", async (req, res) => {
 });
 
 router.post("/update-balance", async (req, res) => {
-  const { accountNumber, newBalance } = req.body;
+  const { accountNumber, amountToAdd } = req.body;
 
-  if (!accountNumber || typeof newBalance !== "number") {
+  if (!accountNumber || typeof amountToAdd !== "number") {
     return res
       .status(400)
-      .json({ message: "Account number and new balance are required" });
+      .json({ message: "Account number and amount to add are required" });
   }
 
   try {
@@ -580,7 +580,7 @@ router.post("/update-balance", async (req, res) => {
       return res.status(404).json({ message: "Account not found" });
     }
 
-    user.accounts[accountIndex].balance = newBalance;
+    user.accounts[accountIndex].balance += amountToAdd;
     await user.save();
 
     res.status(200).json({
@@ -592,6 +592,7 @@ router.post("/update-balance", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 router.post("/send-notification", async (req, res) => {
   const { email, subject, message } = req.body;
@@ -613,6 +614,45 @@ router.post("/send-notification", async (req, res) => {
       .json({ message: "Error sending notification. Please try again later." });
   }
 });
+
+// router.post("/send-notification-message", async (req, res) => {
+//   const { userId, message } = req.body;
+
+//   if (!userId || !message) {
+//     return res
+//       .status(400)
+//       .json({ message: "User ID and message are required" });
+//   }
+
+//   try {
+//     // Find the user by their ID
+//     const user = await User.findById(userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Create a new notification object
+//     const notification = {
+//       message,
+//       date: new Date(),
+//     };
+
+//     // Push the notification to the user's notifications array
+//     user.notifications.push(notification);
+
+//     // Save the updated user document
+//     await user.save();
+
+//     // Return success response
+//     res.status(200).json({ message: "Notification sent successfully" });
+//   } catch (error) {
+//     console.error("Error sending notification:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error sending notification. Please try again later." });
+//   }
+// });
 
 router.get("/balance/:accountNumber", async (req, res) => {
   const { accountNumber } = req.params;
