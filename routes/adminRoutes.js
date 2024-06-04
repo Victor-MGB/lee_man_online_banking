@@ -25,7 +25,7 @@ const generateToken = (payload) => {
 };
 
 // Admin login
-app.post("/admin/login", async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -61,7 +61,7 @@ app.post("/admin/login", async (req, res) => {
 });
 
 // Endpoint for admin registration (sign up)
-app.post("/admin/signup", async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
