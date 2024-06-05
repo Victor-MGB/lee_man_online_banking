@@ -273,6 +273,7 @@ router.post("/login", async (req, res) => {
   const { accountNumber, password } = req.body;
 
   try {
+    // Find the user by account number within their accounts array
     const user = await User.findOne({
       "accounts.accountNumber": accountNumber,
     });
@@ -288,6 +289,7 @@ router.post("/login", async (req, res) => {
     console.log("Password provided:", password);
     console.log("Stored hashed password:", user.password);
 
+    // Check if the provided password matches the stored hashed password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.log("Password mismatch for user:", user._id);
@@ -296,28 +298,25 @@ router.post("/login", async (req, res) => {
         .json({ message: "Invalid account number or password" });
     }
 
+    // Generate a JWT token for the user
     const token = jwt.sign(
       { userId: user._id, accountNumber: accountNumber },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // Send back a successful response with the token and all user details
     res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        accountNumber: accountNumber,
-      },
+      user,
     });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 
 
 router.post("/verify-kyc", async (req, res) => {
