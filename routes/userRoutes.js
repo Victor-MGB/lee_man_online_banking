@@ -298,6 +298,11 @@ router.post("/login", async (req, res) => {
         .json({ message: "Invalid account number or password" });
     }
 
+    // Extract the account number from the accounts array
+    const account = user.accounts.find(
+      (acc) => acc.accountNumber === accountNumber
+    );
+
     // Generate a JWT token for the user
     const token = jwt.sign(
       { userId: user._id, accountNumber: accountNumber },
@@ -309,7 +314,10 @@ router.post("/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user,
+      user: {
+        ...user.toObject(),
+        accountNumber: account.accountNumber, // Include account number in response
+      },
     });
   } catch (error) {
     console.error("Error during login:", error);
