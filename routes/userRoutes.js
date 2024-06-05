@@ -175,9 +175,9 @@ The Central City Bank Team
   }
 });
 
-router.get("/",(req,res)=>{
-    res.send("hello world")
-})
+router.get("/", (req, res) => {
+  res.send("hello world");
+});
 
 router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -279,12 +279,9 @@ router.post("/login", async (req, res) => {
 
     if (!user) {
       console.log("User not found with account number:", accountNumber);
-      return res.status(400).json({ message: "Invalid account number or password" });
-    }
-
-    if (user.kycStatus !== "verified") {
-      console.log("User KYC status not verified:", user.kycStatus);
-      return res.status(403).json({ message: "KYC verification is pending" });
+      return res
+        .status(400)
+        .json({ message: "Invalid account number or password" });
     }
 
     console.log("User found:", user);
@@ -294,7 +291,9 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       console.log("Password mismatch for user:", user._id);
-      return res.status(400).json({ message: "Invalid account number or password" });
+      return res
+        .status(400)
+        .json({ message: "Invalid account number or password" });
     }
 
     const token = jwt.sign(
@@ -320,8 +319,15 @@ router.post("/login", async (req, res) => {
   }
 });
 
+
 router.post("/verify-kyc", async (req, res) => {
   const { userId, kycDocuments } = req.body;
+
+  if (!userId || !kycDocuments) {
+    return res
+      .status(400)
+      .json({ message: "User ID and KYC documents are required", status: 400 });
+  }
 
   try {
     // Find user by userId
@@ -401,7 +407,10 @@ router.post("/withdraw", async (req, res) => {
     // Deduct the amount from account balance
     account.balance -= amount;
 
-    // Add withdrawal transaction record
+    // Update the root balance field
+    user.balance -= amount;
+
+    // Create withdrawal transaction record
     const withdrawalTransaction = {
       transactionId: new mongoose.Types.ObjectId(),
       date: new Date(),
@@ -409,10 +418,13 @@ router.post("/withdraw", async (req, res) => {
       amount: amount,
       currency: account.currency,
       description: "Withdrawal",
+      accountNumber: account.accountNumber, // Add accountNumber
+      accountId: account.accountId, // Add accountId
     };
 
-    // Add transaction record to account
+    // Add transaction record to account and root withdrawals array
     account.transactions.push(withdrawalTransaction);
+    user.withdrawals.push(withdrawalTransaction);
 
     // Save the user document to update the account details
     await user.save();
@@ -431,7 +443,9 @@ router.post("/deposit", async (req, res) => {
 
   try {
     // Find user by account number
-    const user = await User.findOne({ "accounts.accountNumber": accountNumber });
+    const user = await User.findOne({
+      "accounts.accountNumber": accountNumber,
+    });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -443,7 +457,9 @@ router.post("/deposit", async (req, res) => {
     }
 
     // Find the account by account number
-    const account = user.accounts.find(acc => acc.accountNumber === accountNumber);
+    const account = user.accounts.find(
+      (acc) => acc.accountNumber === accountNumber
+    );
     if (!account) {
       return res.status(400).json({ message: "Account not found" });
     }
@@ -583,14 +599,17 @@ router.post("/update-balance", async (req, res) => {
     user.accounts[accountIndex].balance += amountToAdd;
 
     // Update the user's primary balance as the sum of all account balances
-    user.balance = user.accounts.reduce((acc, account) => acc + account.balance, 0);
+    user.balance = user.accounts.reduce(
+      (acc, account) => acc + account.balance,
+      0
+    );
 
     await user.save();
 
     res.status(200).json({
       message: "Account balance updated successfully",
       account: user.accounts[accountIndex],
-      totalBalance: user.balance
+      totalBalance: user.balance,
     });
   } catch (error) {
     console.error("Error updating balance:", error);
@@ -726,7 +745,6 @@ router.get("/balance/:accountNumber", async (req, res) => {
 //   }
 // });
 
-
 router.delete("/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -744,7 +762,7 @@ router.delete("/:userId", async (req, res) => {
   }
 });
 
-router.post("/logout", async(req, res) => {
+router.post("/logout", async (req, res) => {
   // Ideally, you'd handle token invalidation here, like adding the token to a blacklist
   res.status(200).json({ message: "Logout successful" });
 });
