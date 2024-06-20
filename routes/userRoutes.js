@@ -687,7 +687,7 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.post("/withdraw", async (req, res) => {
+router.post('/withdraw', async (req, res) => {
   const { email, accountPin, amount } = req.body;
 
   const session = await mongoose.startSession();
@@ -696,25 +696,23 @@ router.post("/withdraw", async (req, res) => {
   try {
     const user = await User.findOne({ email }).session(session);
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: 'User not found' });
     }
 
     const isMatch = await bcrypt.compare(accountPin, user.accountPin);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid account pin" });
+      return res.status(400).json({ message: 'Invalid account pin' });
     }
 
     // Assume a single default account for simplicity
     const account = user.accounts[0];
     if (!account) {
-      return res
-        .status(400)
-        .json({ message: "No account found for this user" });
+      return res.status(400).json({ message: 'No account found for this user' });
     }
 
     // Check if sufficient balance is available
     if (account.balance < amount) {
-      return res.status(400).json({ message: "Insufficient balance" });
+      return res.status(400).json({ message: 'Insufficient balance' });
     }
 
     // Deduct the amount from account balance
@@ -724,10 +722,10 @@ router.post("/withdraw", async (req, res) => {
     const withdrawalTransaction = {
       transactionId: new mongoose.Types.ObjectId(),
       date: new Date(),
-      type: "withdrawal",
+      type: 'withdrawal',
       amount: amount,
       currency: account.currency,
-      description: "Withdrawal",
+      description: 'Withdrawal',
       accountNumber: account.accountNumber,
       accountId: account.accountId,
     };
@@ -741,13 +739,11 @@ router.post("/withdraw", async (req, res) => {
 
     await session.commitTransaction();
 
-    res
-      .status(200)
-      .json({ message: "Withdrawal successful", withdrawalTransaction });
+    res.status(200).json({ message: 'Withdrawal successful', withdrawalTransaction });
   } catch (error) {
-    console.error("Error during withdrawal:", error);
+    console.error('Error during withdrawal:', error);
     await session.abortTransaction();
-    res.status(500).json({ message: "Server error. Please try again later." });
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   } finally {
     session.endSession();
   }
