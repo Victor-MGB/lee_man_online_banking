@@ -35,6 +35,17 @@ const withdrawalSchema = new mongoose.Schema({
     default: "pending",
   },
   description: { type: String },
+  stages: [
+    {
+      stageName: { type: String, required: true },
+      status: {
+        type: String,
+        enum: ["pending", "in progress", "completed"],
+        default: "pending",
+      },
+      notes: { type: String },
+    },
+  ],
 });
 
 const userSchema = new mongoose.Schema({

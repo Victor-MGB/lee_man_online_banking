@@ -61,33 +61,29 @@ app.post("/login", async (req, res) => {
 });
 
 // Endpoint for admin registration (sign up)
-app.post("/signup", async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+// app.post("/signup", async (req, res) => {
+//   try {
+//     const { username, email, password } = req.body;
 
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email });
-    if (existingAdmin) {
-      return res.status(409).json({ message: "Admin already exists" });
-    }
+//     const existingAdmin = await Admin.findOne({ email });
+//     if (existingAdmin) {
+//       return res.status(409).json({ message: "Admin already exists" });
+//     }
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
+//     const newAdmin = await new Admin({
+//       username,
+//       email,
+//       password: hashedPassword, 
+//     }).save();
 
-    // Create new admin with hashed password
-    const newAdmin = await new Admin({
-      username,
-      email,
-      password: hashedPassword, // Store the hashed password
-    }).save();
-
-    res
-      .status(201)
-      .json({ message: "Admin registered successfully", newAdmin });
-  } catch (error) {
-    console.error("Error during admin registration:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     res
+//       .status(201)
+//       .json({ message: "Admin registered successfully", newAdmin });
+//   } catch (error) {
+//     console.error("Error during admin registration:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 module.exports = app;

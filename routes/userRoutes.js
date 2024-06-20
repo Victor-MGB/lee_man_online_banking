@@ -21,6 +21,313 @@ const generateAccountNumber = async () => {
   return accountNumber;
 };
 
+async function validateUserAndWithdrawal(req, res, next) {
+  const { email, accountPin, withdrawalId } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log("User not found for email:", email);
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(accountPin, user.accountPin);
+    if (!isMatch) {
+      console.log("Invalid account pin for user:", email);
+      return res.status(400).json({ message: "Invalid account pin" });
+    }
+
+    // Log withdrawals for debugging
+    console.log(
+      "User's withdrawals:",
+      JSON.stringify(user.withdrawals, null, 2)
+    );
+
+    // Search by both _id and withdrawalId
+    const withdrawal = user.withdrawals.find(
+      (w) =>
+        w._id.toString() === withdrawalId ||
+        w.withdrawalId.toString() === withdrawalId
+    );
+
+    if (!withdrawal) {
+      console.log("Requested withdrawalId:", withdrawalId);
+      return res.status(400).json({ message: "Withdrawal not found" });
+    }
+
+    console.log("Validated Withdrawal:", JSON.stringify(withdrawal, null, 2));
+    req.user = user;
+    req.withdrawal = withdrawal;
+    next();
+  } catch (error) {
+    console.error("Error validating user and withdrawal:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+}
+
+async function processPayment(userId, amount) {
+  // Simulate payment processing logic here
+  // Replace with actual payment processing logic if available
+  try {
+    // For demonstration, just returning true if userId is valid
+    if (userId) {
+      console.log(
+        `Payment processed successfully for user ${userId} with amount ${amount}`
+      );
+      return true;
+    } else {
+      console.log("Payment processing failed: Invalid user ID");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    return false;
+  }
+}
+
+// Fetch user by email
+router.get('/users/:email', async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Stage 1: Verify Account Pin
+router.post("/stage1", async (req, res) => {
+  const { email, accountPin } = req.body;
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    // If user is not found, return error
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Verify account pin
+    const isMatch = await bcrypt.compare(accountPin, user.accountPin);
+
+    // If account pin is invalid, return error
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid account pin" });
+    }
+
+    // If account pin is valid, update withdrawal stage
+    const withdrawal = user.withdrawals.find(
+      (withdrawal) => withdrawal.status === "pending"
+    ); // Assuming you find the correct withdrawal object
+    if (!withdrawal) {
+      return res.status(400).json({ message: "Withdrawal not found" });
+    }
+
+    withdrawal.stages.push({
+      stageName: "Verify Account Pin",
+      status: "completed",
+    });
+    await user.save();
+
+    // Send response indicating successful completion of stage 1
+    res.status(200).json({ message: "Stage 1 completed" });
+  } catch (error) {
+    console.error("Error during Stage 1:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Upload Identification for Withdrawal
+router.post('/stage2', async (req, res) => {
+  const { email, identification } = req.body;
+
+  try {
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    // If user is not found, return error
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // Find the pending withdrawal associated with the user
+    const withdrawal = user.withdrawals.find(withdrawal => withdrawal.status === 'pending');
+    if (!withdrawal) {
+      return res.status(400).json({ message: "Withdrawal not found" });
+    }
+
+    // Update withdrawal stages to mark 'Upload Identification' as completed
+    withdrawal.stages.push({ stageName: "Upload Identification", status: "completed", notes: identification });
+    await user.save();
+
+    // Send response indicating successful completion of stage 2
+    res.status(200).json({ message: "Stage 2 completed" });
+
+  } catch (error) {
+    console.error("Error during Stage 2:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/stage3", validateUserAndWithdrawal, async (req, res) => {
+  const { answers } = req.body; // Extract answers from request body
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  // Check if answers is defined and is an array
+  if (!Array.isArray(answers) || answers.length === 0) {
+    return res.status(400).json({ message: "Invalid answers provided" });
+  }
+
+  try {
+    // Simulate security questions verification logic
+    const correctAnswers = user.securityAnswers; // Assuming securityAnswers is stored in user schema
+
+    if (!correctAnswers || correctAnswers.length !== answers.length) {
+      return res
+        .status(400)
+        .json({ message: "Invalid security answers setup" });
+    }
+
+    const isMatch = answers.every(
+      (answer, index) => answer === correctAnswers[index]
+    );
+
+    if (isMatch) {
+      withdrawal.stages.push({
+        stageName: "Security Questions",
+        status: "completed",
+      });
+      await user.save();
+      res.status(200).json({ message: "Stage 3 completed" });
+    } else {
+      res.status(400).json({ message: "Security answers do not match" });
+    }
+  } catch (error) {
+    console.error("Error during Stage 3:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Stage 4: Submit Tax Information
+router.post("/stage4", validateUserAndWithdrawal, async (req, res) => {
+  const { taxInfo } = req.body;
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  try {
+    // Simulate tax information submission logic
+    withdrawal.stages.push({
+      stageName: "Submit Tax Information",
+      status: "completed",
+      notes: taxInfo,
+    });
+    await user.save();
+    res.status(200).json({ message: "Stage 4 completed" });
+  } catch (error) {
+    console.error("Error during Stage 4:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// POST /stage5 endpoint to process payment
+router.post("/stage5", validateUserAndWithdrawal, async (req, res) => {
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  try {
+    const paymentProcessed = await processPayment(user._id, 5); // Adjust amount as needed
+    if (paymentProcessed) {
+      withdrawal.stages.push({
+        stageName: "Payment Processing",
+        status: "completed",
+      });
+      await user.save();
+      res.status(200).json({ message: "Stage 5 completed" });
+    } else {
+      res.status(400).json({ message: "Payment processing failed" });
+    }
+  } catch (error) {
+    console.error("Error during Stage 5:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Stage 7: Insurance Verification
+router.post("/stage6", validateUserAndWithdrawal, async (req, res) => {
+  const { insuranceDocument } = req.body;
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  try {
+    // Simulate insurance verification logic
+    withdrawal.stages.push({
+      stageName: "Insurance Verification",
+      status: "completed",
+      notes: insuranceDocument,
+    });
+    await user.save();
+    res.status(200).json({ message: "Stage 6 completed" });
+  } catch (error) {
+    console.error("Error during Stage 6:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Stage 6: Document Upload Verification
+router.post("/stage7", validateUserAndWithdrawal, async (req, res) => {
+  const { document } = req.body; // Assume document is a base64 encoded string or a link to the document
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  try {
+    // Simulate document upload verification logic
+    // Here you could add actual verification logic, for now we just check if document exists
+    if (document) {
+      withdrawal.stages.push({
+        stageName: "Document Upload Verification",
+        status: "completed",
+        notes: "Document verified successfully",
+      });
+      await user.save();
+      res.status(200).json({ message: "Stage 7 completed" });
+    } else {
+      res
+        .status(400)
+        .json({ message: "Document upload failed or document is invalid" });
+    }
+  } catch (error) {
+    console.error("Error during Stage 7:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Stage 8: Final Approval
+router.post("/stage8", validateUserAndWithdrawal, async (req, res) => {
+  const user = req.user;
+  const withdrawal = req.withdrawal;
+
+  try {
+    // Simulate final approval logic
+    withdrawal.stages.push({
+      stageName: "Final Approval",
+      status: "completed",
+    });
+    withdrawal.status = "completed";
+    await user.save();
+    res
+      .status(200)
+      .json({ message: "Stage 8 completed. Withdrawal approved." });
+  } catch (error) {
+    console.error("Error during Stage 8:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
 router.post("/register", async (req, res) => {
   const {
     firstName,
@@ -325,8 +632,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
 router.post("/verify-kyc", async (req, res) => {
   const { userId, kycDocuments } = req.body;
 
@@ -385,14 +690,15 @@ router.get("/users", async (req, res) => {
 router.post("/withdraw", async (req, res) => {
   const { email, accountPin, amount } = req.body;
 
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).session(session);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    // Verify account pin
     const isMatch = await bcrypt.compare(accountPin, user.accountPin);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid account pin" });
@@ -414,9 +720,6 @@ router.post("/withdraw", async (req, res) => {
     // Deduct the amount from account balance
     account.balance -= amount;
 
-    // Update the root balance field
-    user.balance -= amount;
-
     // Create withdrawal transaction record
     const withdrawalTransaction = {
       transactionId: new mongoose.Types.ObjectId(),
@@ -425,8 +728,8 @@ router.post("/withdraw", async (req, res) => {
       amount: amount,
       currency: account.currency,
       description: "Withdrawal",
-      accountNumber: account.accountNumber, // Add accountNumber
-      accountId: account.accountId, // Add accountId
+      accountNumber: account.accountNumber,
+      accountId: account.accountId,
     };
 
     // Add transaction record to account and root withdrawals array
@@ -434,14 +737,19 @@ router.post("/withdraw", async (req, res) => {
     user.withdrawals.push(withdrawalTransaction);
 
     // Save the user document to update the account details
-    await user.save();
+    await user.save({ session });
+
+    await session.commitTransaction();
 
     res
       .status(200)
       .json({ message: "Withdrawal successful", withdrawalTransaction });
   } catch (error) {
     console.error("Error during withdrawal:", error);
+    await session.abortTransaction();
     res.status(500).json({ message: "Server error. Please try again later." });
+  } finally {
+    session.endSession();
   }
 });
 
