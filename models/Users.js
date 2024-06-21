@@ -61,6 +61,13 @@ const userSchema = new mongoose.Schema({
   dateOfAccountCreation: { type: Date, default: Date.now },
   otp: { type: String },
   otpExpires: { type: Date },
+  stage_1: { type: Boolean, default: false },
+  stage_2: { type: Boolean, default: false },
+  stage_3: { type: Boolean, default: false },
+  stage_4: { type: Boolean, default: false },
+  stage_5: { type: Boolean, default: false },
+  stage_6: { type: Boolean, default: false },
+  stage_7: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("User", userSchema);

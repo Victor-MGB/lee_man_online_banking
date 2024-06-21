@@ -315,7 +315,36 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        ...user.toObject(),
+        _id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        accountType: user.accountType,
+        address: user.address,
+        postalCode: user.postalCode,
+        state: user.state,
+        country: user.country,
+        currency: user.currency,
+        accountPin: user.accountPin,
+        agree: user.agree,
+        kycStatus: user.kycStatus,
+        balance: user.balance,
+        accounts: user.accounts,
+        withdrawals: user.withdrawals,
+        dateOfAccountCreation: user.dateOfAccountCreation,
+        otp: user.otp,
+        otpExpires: user.otpExpires,
+        stage_1: user.stage_1,
+        stage_2: user.stage_2,
+        stage_3: user.stage_3,
+        stage_4: user.stage_4,
+        stage_5: user.stage_5,
+        stage_6: user.stage_6,
+        stage_7: user.stage_7,
         accountNumber: account.accountNumber, // Include account number in response
       },
     });
@@ -325,43 +354,43 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
 
-
-router.post("/verify-kyc", async (req, res) => {
-  const { userId, kycDocuments } = req.body;
-
-  if (!userId || !kycDocuments) {
+  if (!email || !otp) {
     return res
       .status(400)
-      .json({ message: "User ID and KYC documents are required", status: 400 });
+      .json({ message: "Email and OTP are required", status: 400 });
   }
 
   try {
-    // Find user by userId
-    const user = await User.findById(userId);
+    // Find user by email
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found", status: 404 });
     }
 
-    // Update user KYC documents
-    user.kycDocuments = kycDocuments;
-    user.kycStatus = "verified"; // or 'pending' based on your logic
+    // Check if OTP matches and is not expired
+    const currentTime = new Date();
+    if (user.otp !== otp || user.otpExpires < currentTime) {
+      return res
+        .status(400)
+        .json({ message: "Invalid email or OTP", status: 400 });
+    }
 
-    // Save the updated user document
-    await user.save();
-
+    // OTP verification successful
     res.status(200).json({
-      message: "KYC documents verified successfully",
+      message: "OTP verified successfully",
       status: 200,
       user: {
         id: user._id,
-        kycStatus: user.kycStatus,
-        kycDocuments: user.kycDocuments,
+        email: user.email,
+        otpVerified: true,
       },
     });
   } catch (error) {
-    console.error("Error verifying KYC documents:", error);
+    console.error("Error verifying OTP:", error);
     res
       .status(500)
       .json({ message: "Server error. Please try again later.", status: 500 });
