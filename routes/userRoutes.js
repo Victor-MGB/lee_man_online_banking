@@ -741,6 +741,182 @@ router.get("/balance/:accountNumber", async (req, res) => {
   }
 });
 
+// stages routes
+
+// Endpoint to update stage_1
+router.post("/update-stage-1", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_1: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "stage_1 updated to true",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating stage_1:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/update-stage-2", async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_2: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "stage_2 updated to true",
+      user,
+    });
+  } catch (error) {
+    console.error("Error updating stage_2:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+// Update stage 3
+router.post('/update-stage-3', async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_3: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'stage_3 updated to true',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating stage_3:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Update stage 4
+router.post('/update-stage-4', async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_4: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'stage_4 updated to true',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating stage_4:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Update stage 5
+router.post('/update-stage-5', async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_5: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'stage_5 updated to true',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating stage_5:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Update stage 6
+router.post('/update-stage-6', async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_6: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'stage_6 updated to true',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating stage_6:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Update stage 7
+router.post('/update-stage-7', async (req, res) => {
+  const { userId } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { stage_7: true },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'stage_7 updated to true',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating stage_7:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
 // router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
 //   const { userId, transactionId } = req.params;
 

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const registrationRoute = require("./routes/userRoutes");
-const adminRoute = require("./routes/adminRoutes")
+const adminRoute = require("./routes/adminRoutes");
 
 
 require("dotenv").config();
@@ -40,6 +40,7 @@ app.use((err, req, res, next) => {
 // Routes
 app.use("/api", registrationRoute);
 app.use("/admin",adminRoute);
+
 
 // Start the server
 app.listen(port, () => {
