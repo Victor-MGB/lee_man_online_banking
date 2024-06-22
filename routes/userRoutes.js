@@ -282,7 +282,10 @@ router.post("/login", async (req, res) => {
       console.log("User not found with account number:", accountNumber);
       return res
         .status(400)
-        .json({ message: "Invalid account number or password" });
+        .json({
+          success: false,
+          message: "Invalid account number or password",
+        });
     }
 
     console.log("User found:", user);
@@ -295,7 +298,10 @@ router.post("/login", async (req, res) => {
       console.log("Password mismatch for user:", user._id);
       return res
         .status(400)
-        .json({ message: "Invalid account number or password" });
+        .json({
+          success: false,
+          message: "Invalid account number or password",
+        });
     }
 
     // Extract the account number from the accounts array
@@ -312,6 +318,7 @@ router.post("/login", async (req, res) => {
 
     // Send back a successful response with the token and all user details
     res.status(200).json({
+      success: true,
       message: "Login successful",
       token,
       user: {
@@ -350,9 +357,16 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error. Please try again later.",
+      });
   }
 });
+
+
 
 router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -740,8 +754,6 @@ router.get("/balance/:accountNumber", async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-// stages routes
 
 // Endpoint to update stage_1
 router.post("/update-stage-1", async (req, res) => {
