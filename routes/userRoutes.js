@@ -759,7 +759,15 @@ router.get("/balance/:accountNumber", async (req, res) => {
 router.post("/update-stage-1", async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-1:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_1: true },
@@ -767,12 +775,14 @@ router.post("/update-stage-1", async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
       message: "stage_1 updated to true",
       user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error("Error updating stage_1:", error);
@@ -780,10 +790,19 @@ router.post("/update-stage-1", async (req, res) => {
   }
 });
 
+// Update stage 2
 router.post("/update-stage-2", async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-2:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_2: true },
@@ -791,12 +810,14 @@ router.post("/update-stage-2", async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
       message: "stage_2 updated to true",
       user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error("Error updating stage_2:", error);
@@ -808,7 +829,15 @@ router.post("/update-stage-2", async (req, res) => {
 router.post('/update-stage-3', async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-3:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_3: true },
@@ -816,12 +845,14 @@ router.post('/update-stage-3', async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.status(200).json({
       message: 'stage_3 updated to true',
-      user
+      user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error('Error updating stage_3:', error);
@@ -833,7 +864,15 @@ router.post('/update-stage-3', async (req, res) => {
 router.post('/update-stage-4', async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-4:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_4: true },
@@ -841,12 +880,14 @@ router.post('/update-stage-4', async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.status(200).json({
       message: 'stage_4 updated to true',
-      user
+      user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error('Error updating stage_4:', error);
@@ -858,7 +899,15 @@ router.post('/update-stage-4', async (req, res) => {
 router.post('/update-stage-5', async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-5:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_5: true },
@@ -866,12 +915,14 @@ router.post('/update-stage-5', async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.status(200).json({
       message: 'stage_5 updated to true',
-      user
+      user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error('Error updating stage_5:', error);
@@ -883,7 +934,15 @@ router.post('/update-stage-5', async (req, res) => {
 router.post('/update-stage-6', async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-6:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_6: true },
@@ -891,12 +950,14 @@ router.post('/update-stage-6', async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.status(200).json({
       message: 'stage_6 updated to true',
-      user
+      user,
+      requestBody: req.body // Return the request body in the response
     });
   } catch (error) {
     console.error('Error updating stage_6:', error);
@@ -908,7 +969,15 @@ router.post('/update-stage-6', async (req, res) => {
 router.post('/update-stage-7', async (req, res) => {
   const { userId } = req.body;
 
+  // Log the request body to the console
+  console.log("Request body for update-stage-7:", req.body);
+
   try {
+    if (!userId) {
+      console.error("userId not provided in request body");
+      return res.status(400).json({ message: "userId not provided" });
+    }
+
     const user = await User.findByIdAndUpdate(
       userId,
       { stage_7: true },
@@ -916,18 +985,21 @@ router.post('/update-stage-7', async (req, res) => {
     );
 
     if (!user) {
+      console.error("User not found with userId:", userId);
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.status(200).json({
       message: 'stage_7 updated to true',
-      user
+      user,
+      requestBody: req.body 
     });
   } catch (error) {
     console.error('Error updating stage_7:', error);
     res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
+
 
 // router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
 //   const { userId, transactionId } = req.params;
