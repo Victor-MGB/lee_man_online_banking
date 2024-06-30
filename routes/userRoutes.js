@@ -688,45 +688,6 @@ router.post("/send-notification", async (req, res) => {
   }
 });
 
-// router.post("/send-notification-message", async (req, res) => {
-//   const { userId, message } = req.body;
-
-//   if (!userId || !message) {
-//     return res
-//       .status(400)
-//       .json({ message: "User ID and message are required" });
-//   }
-
-//   try {
-//     // Find the user by their ID
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Create a new notification object
-//     const notification = {
-//       message,
-//       date: new Date(),
-//     };
-
-//     // Push the notification to the user's notifications array
-//     user.notifications.push(notification);
-
-//     // Save the updated user document
-//     await user.save();
-
-//     // Return success response
-//     res.status(200).json({ message: "Notification sent successfully" });
-//   } catch (error) {
-//     console.error("Error sending notification:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error sending notification. Please try again later." });
-//   }
-// });
-
 router.get("/balance/:accountNumber", async (req, res) => {
   const { accountNumber } = req.params;
 
@@ -888,47 +849,340 @@ router.post("/update-stage-7", async (req, res) => {
   }
 });
 
+router.post("/admin/register", async (req, res) => {
+  const {
+    firstName,
+    middleName,
+    lastName,
+    email,
+    phoneNumber,
+    gender,
+    dateOfBirth,
+    accountType,
+    address,
+    postalCode,
+    state,
+    country,
+    currency,
+    password,
+    confirmPassword,
+    accountPin,
+  } = req.body;
 
+  // Validate required fields
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phoneNumber ||
+    !gender ||
+    !dateOfBirth ||
+    !accountType ||
+    !address ||
+    !postalCode ||
+    !state ||
+    !country ||
+    !currency ||
+    !password ||
+    !confirmPassword ||
+    !accountPin
+  ) {
+    console.log("Validation failed: Missing fields");
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
-// router.get("/user-transaction/:userId/:transactionId", async (req, res) => {
-//   const { userId, transactionId } = req.params;
+  // Validate password confirmation
+  if (password !== confirmPassword) {
+    console.log("Validation failed: Passwords do not match");
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
 
-//   try {
-//     // Find user by userId
-//     const user = await User.findById(userId);
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log("Validation failed: User already exists");
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found", status: 404 });
-//     }
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      upperCase: false,
+      specialChars: false,
+      alphabets: false,
+    });
 
-//     // Find the transaction in user's accounts transactions array
-//     let transaction;
-//     user.accounts.forEach((account) => {
-//       transaction = account.transactions.find(
-//         (trans) => trans._id.toString() === transactionId
-//       );
-//       if (transaction) return; // Break out of loop if transaction found
-//     });
+    // Hash password and account pin
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedAccountPin = await bcrypt.hash(accountPin, 10);
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
-//     if (!transaction) {
-//       return res
-//         .status(404)
-//         .json({ message: "Transaction not found", status: 404 });
-//     }
+    // Create new user
+    const user = new User({
+      firstName,
+      middleName,
+      lastName,
+      email,
+      phoneNumber,
+      gender,
+      dateOfBirth,
+      accountType,
+      address,
+      postalCode,
+      state,
+      country,
+      currency,
+      password: hashedPassword,
+      accountPin: hashedAccountPin,
+      agree: true,
+      kycStatus: "pending",
+      otp,
+      otpExpires,
+    });
 
-//     // If user and transaction are found, return the transaction
-//     res.status(200).json({
-//       message: "Transaction retrieved successfully",
-//       transaction: transaction,
-//       status: 200,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching user transaction:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Server error. Please try again later.", status: 500 });
-//   }
-// });
+    // Save user to the database
+    await user.save();
+
+    // Email content
+    const emailSubject = "OTP for Account Registration";
+    const emailText = `Dear ${firstName},
+
+We are delighted to assist you in completing your account registration with Central City Bank.
+
+Please find below your One-Time Password (OTP) required for account registration:
+OTP: ${otp}
+This OTP is valid for a limited time. Please use it promptly to finalize your registration process.
+If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at centralcitybank0@gmail.com.
+
+Thank you for choosing Central City Bank for your banking needs.
+
+The Central City Bank Team
+`;
+
+    const emailHtml = `<p>Dear ${firstName},</p>
+<p>We are delighted to assist you in completing your account registration with Central City Bank.</p>
+<p>Please find below your One-Time Password (OTP) required for account registration:</p>
+<p><strong>OTP: ${otp}</strong></p>
+<p>This OTP is valid for a limited time. Please use it promptly to finalize your registration process.</p>
+<p>If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
+<p>Thank you for choosing Central City Bank for your banking needs.</p>
+<p>The Central City Bank Team</p>`;
+
+    // Send email
+    try {
+      await sendEmail(email, emailSubject, emailText, emailHtml);
+      res.status(201).json({
+        message: "User registered successfully",
+        user: {
+          firstName,
+          middleName,
+          lastName,
+          email,
+          phoneNumber,
+          gender,
+          dateOfBirth,
+          accountType,
+          address,
+          postalCode,
+          state,
+          country,
+          currency,
+          otp,
+          kycStatus: "pending",
+        },
+      });
+    } catch (emailError) {
+      console.error("Error during email sending:", emailError);
+      res
+        .status(500)
+        .json({ message: "Error sending email. Please try again later." });
+    }
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/admin/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    // Validate input
+    if (!email || !otp) {
+      console.log("Missing fields:", { email, otp });
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or OTP" });
+    }
+
+    // Check if OTP matches
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired
+    if (user.otpExpires < new Date()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Generate account number
+    const accountNumber = await generateAccountNumber();
+
+    // Define the new account object
+    const newAccount = {
+      accountId: new mongoose.Types.ObjectId(),
+      accountNumber: accountNumber,
+      type: "default", // Default type if not provided yet
+      balance: 0,
+      currency: "USD", // Default currency if not provided yet
+      transactions: [],
+    };
+
+    // Add the new account to the user's accounts array
+    user.accounts.push(newAccount);
+
+    // Save the updated user document
+    await user.save();
+
+    // Compose email
+    const emailSubject = "Your New Account Information";
+    const emailHtml = `
+      <p>Dear ${user.firstName} ${user.lastName},</p>
+      <p>We are thrilled to inform you that your account has been successfully created with our platform. Your account details are provided below:</p>
+      <p><strong>Account Number:</strong> ${accountNumber}</p>
+      <p>Please keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
+      <p>Thank you for choosing our platform.</p>
+      <p>Best regards,<br/>Central City Bank</p>
+      <p>USA<br/>
+      centralcitybank0@gmail.com<br/>
+      +12074021612</p>
+    `;
+
+    // Send account number to the user's email
+    sendEmail(email, emailSubject, "", emailHtml);
+
+    // Return success message along with user details and account number
+    res.status(201).json({
+      message: "Account number sent to your email successfully",
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        accountType: user.accountType,
+        address: user.address,
+        postalCode: user.postalCode,
+        state: user.state,
+        country: user.country,
+        currency: user.currency,
+        accountNumber: accountNumber,
+        balance: newAccount.balance,
+        dateOfAccountCreation: user.dateOfAccountCreation,
+      },
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+});
+
+router.post("/admin/login", async (req, res) => {
+  const { accountNumber, password } = req.body;
+
+  try {
+    // Find the user by account number within their accounts array
+    const user = await User.findOne({
+      "accounts.accountNumber": accountNumber,
+    });
+
+    if (!user) {
+      console.log("User not found with account number:", accountNumber);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account number or password",
+      });
+    }
+
+    console.log("User found:", user);
+    console.log("Password provided:", password);
+    console.log("Stored hashed password:", user.password);
+
+    // Check if the provided password matches the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log("Password mismatch for user:", user._id);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account number or password",
+      });
+    }
+
+    // Extract the account number from the accounts array
+    const account = user.accounts.find(
+      (acc) => acc.accountNumber === accountNumber
+    );
+
+    // Generate a JWT token for the user
+    const token = jwt.sign(
+      { userId: user._id, accountNumber: accountNumber },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // Send back a successful response with the token and all user details
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        accountType: user.accountType,
+        address: user.address,
+        postalCode: user.postalCode,
+        state: user.state,
+        country: user.country,
+        currency: user.currency,
+        accountPin: user.accountPin,
+        agree: user.agree,
+        kycStatus: user.kycStatus,
+        balance: user.balance,
+        accounts: user.accounts,
+        withdrawals: user.withdrawals,
+        dateOfAccountCreation: user.dateOfAccountCreation,
+        otp: user.otp,
+        otpExpires: user.otpExpires,
+        stage_1: user.stage_1,
+        stage_2: user.stage_2,
+        stage_3: user.stage_3,
+        stage_4: user.stage_4,
+        stage_5: user.stage_5,
+        stage_6: user.stage_6,
+        stage_7: user.stage_7,
+        accountNumber: account.accountNumber, // Include account number in response
+      },
+    });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+});
 
 router.delete("/:userId", async (req, res) => {
   try {
