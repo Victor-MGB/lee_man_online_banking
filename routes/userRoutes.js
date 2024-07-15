@@ -717,7 +717,7 @@ router.get("/balance/:accountNumber", async (req, res) => {
 });
 
 // Update stage 1
-router.post("/update-stage-1", async (req, res) => {
+router.post("/update-stage_1", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -736,7 +736,7 @@ router.post("/update-stage-1", async (req, res) => {
 });
 
 // Update stage 2
-router.post("/update-stage-2", async (req, res) => {
+router.post("/update-stage_2", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -755,7 +755,7 @@ router.post("/update-stage-2", async (req, res) => {
 });
 
 // Update stage 3
-router.post("/update-stage-3", async (req, res) => {
+router.post("/update-stage_3", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -774,7 +774,7 @@ router.post("/update-stage-3", async (req, res) => {
 });
 
 // Update stage 4
-router.post("/update-stage-4", async (req, res) => {
+router.post("/update-stage_4", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -793,7 +793,7 @@ router.post("/update-stage-4", async (req, res) => {
 });
 
 // Update stage 5
-router.post("/update-stage-5", async (req, res) => {
+router.post("/update-stage_5", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -812,7 +812,7 @@ router.post("/update-stage-5", async (req, res) => {
 });
 
 // Update stage 6
-router.post("/update-stage-6", async (req, res) => {
+router.post("/update-stage_6", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
@@ -831,7 +831,7 @@ router.post("/update-stage-6", async (req, res) => {
 });
 
 // Update stage 7
-router.post("/update-stage-7", async (req, res) => {
+router.post("/update-stage_7", async (req, res) => {
   console.log("Request body:", req.body);
   const { userId } = req.body;
 
