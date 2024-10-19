@@ -14,7 +14,7 @@ const sendEmail = (to, subject, text, html) => {
   return new Promise((resolve, reject) => {
     const mailOptions = {
       from: {
-        name: "CentralCityBank",
+        name: "Centrallnationalbank",
         address: process.env.EMAIL_USER,
       },
       to,
