@@ -119,26 +119,26 @@ router.post("/register", async (req, res) => {
     const emailSubject = "OTP for Account Registration";
     const emailText = `Dear ${firstName},
 
-We are delighted to assist you in completing your account registration with Central City Bank.
+We are delighted to assist you in completing your account registration with Central Nation Bank.
 
 Please find below your One-Time Password (OTP) required for account registration:
 OTP: ${otp}
 This OTP is valid for a limited time. Please use it promptly to finalize your registration process.
-If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at centralcitybank0@gmail.com.
+If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at Centrallnationalbank@gmail.com.
 
-Thank you for choosing Central City Bank for your banking needs.
+Thank you for choosing Central Nation Bank for your banking needs.
 
-The Central City Bank Team
+The Central Nation Bank Team
 `;
 
     const emailHtml = `<p>Dear ${firstName},</p>
-<p>We are delighted to assist you in completing your account registration with Central City Bank.</p>
+<p>We are delighted to assist you in completing your account registration with Central Nation Bank.</p>
 <p>Please find below your One-Time Password (OTP) required for account registration:</p>
 <p><strong>OTP: ${otp}</strong></p>
 <p>This OTP is valid for a limited time. Please use it promptly to finalize your registration process.</p>
-<p>If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
-<p>Thank you for choosing Central City Bank for your banking needs.</p>
-<p>The Central City Bank Team</p>`;
+<p>If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
+<p>Thank you for choosing Central Nation Bank for your banking needs.</p>
+<p>The Central Nation Bank Team</p>`;
 
     // Send email
     try {
@@ -231,12 +231,12 @@ router.post("/verify-otp", async (req, res) => {
       <p>Dear ${user.firstName} ${user.lastName},</p>
       <p>We are thrilled to inform you that your account has been successfully created with our platform. Your account details are provided below:</p>
       <p><strong>Account Number:</strong> ${accountNumber}</p>
-      <p>Please keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:centralcitybank0@gmail.com">centralcitybank0@gmail.com</a>.</p>
+      <p>Please keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
       <p>Thank you for choosing our platform.</p>
-      <p>Best regards,<br/>Central City Bank</p>
+      <p>Best regards,<br/>Central Nation Bank</p>
       <p>USA<br/>
-      centralcitybank0@gmail.com<br/>
-      +12074021612</p>
+      Centrallnationalbank@gmail.com<br/>
+      +16893358988</p>
     `;
 
     // Send account number to the user's email
