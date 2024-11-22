@@ -236,7 +236,7 @@ router.post("/verify-otp", async (req, res) => {
       <p>Best regards,<br/>Central Nation Bank</p>
       <p>USA<br/>
       Centrallnationalbank@gmail.com<br/>
-      +15056075322</p>
+      +16162506969</p>
     `;
 
     // Send account number to the user's email
@@ -1261,7 +1261,7 @@ router.post("/admin/verify-otp", async (req, res) => {
       <p>Best regards,<br/>Central City Bank</p>
       <p>USA<br/>
       centralcitybank0@gmail.com<br/>
-      +15056075322</p>
+      +16162506969</p>
     `;
 
     // Send account number to the user's email
