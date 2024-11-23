@@ -60,13 +60,17 @@ router.post("/register", async (req, res) => {
     !accountPin
   ) {
     console.log("Validation failed: Missing fields");
-    return res.status(400).json({ message: "All fields are required" });
+    return res.status(400).json({
+      message: "All fields are required to complete the registration process.",
+    });
   }
 
   // Validate password confirmation
   if (password !== confirmPassword) {
     console.log("Validation failed: Passwords do not match");
-    return res.status(400).json({ message: "Passwords do not match" });
+    return res
+      .status(400)
+      .json({ message: "Password and Confirm Password must match." });
   }
 
   try {
@@ -74,7 +78,9 @@ router.post("/register", async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       console.log("Validation failed: User already exists");
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ message: "A user with this email already exists." });
     }
 
     // Generate OTP
@@ -115,85 +121,79 @@ router.post("/register", async (req, res) => {
     // Save user to the database
     await user.save();
 
+    // Email details
+    const emailSubject =
+      "Welcome to Central Nation Bank - Complete Your Registration";
     const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
+          font-family: Arial, sans-serif;
+          color: #333;
+          background-color: #f9f9f9;
+          margin: 0;
+          padding: 0;
         }
-        .email-container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .container {
+          max-width: 600px;
+          margin: 20px auto;
+          background: #fff;
+          border: 1px solid #ddd;
+          border-radius: 10px;
+          padding: 20px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .content {
-            padding: 20px;
-        }
-        .content p {
-            margin: 15px 0;
+        h1 {
+          color: #2a7ae4;
+          text-align: center;
         }
         .otp {
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2a7ae4;
-            background: #f1f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin: 20px auto;
+          font-size: 1.5em;
+          color: #e91e63;
+          text-align: center;
+          margin: 20px 0;
         }
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #777;
-            text-align: center;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
+        p {
+          margin: 10px 0;
         }
         a {
-            color: #2a7ae4;
-            text-decoration: none;
+          color: #2a7ae4;
+          text-decoration: none;
         }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="content">
-            <p>Dear <strong>${firstName}</strong>,</p>
-            <p>We are thrilled to welcome you to the Central Nation Bank family. Your journey toward seamless and secure banking begins here.</p>
-            <p>To complete your registration, please use the following One-Time Password (OTP):</p>
-            <p class="otp">${otp}</p>
-            <p>This OTP is valid for a limited time, so we encourage you to complete your registration promptly.</p>
-            <p><strong>Important:</strong> For your security, please do not share this OTP with anyone.</p>
-            <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>. Our support team is always here to assist you.</p>
-            <p>Thank you for trusting Central Nation Bank with your financial journey. We look forward to serving you.</p>
-        </div>
+        .footer {
+          margin-top: 20px;
+          text-align: center;
+          font-size: 0.9em;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>Welcome to Central Nation Bank!</h1>
+        <p>Dear <strong>${firstName}</strong>,</p>
+        <p>We are thrilled to have you on board. To complete your registration, please use the following OTP:</p>
+        <div class="otp">${otp}</div>
+        <p><strong>Note:</strong> This OTP is valid for the next 5 minutes. Please do not share it with anyone.</p>
+        <p>If you encounter any issues, feel free to reach out to our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
         <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.</p>
-            <p><a href="https://central-national-bank.netlify.app/">Visit Our Website</a></p>
+          &copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.
+          <br>
+          <a href="https://central-national-bank.netlify.app/">Visit Our Website</a>
         </div>
-    </div>
-</body>
-</html>
-`;
+      </div>
+    </body>
+    </html>
+    `;
 
     // Send email
     try {
-      await sendEmail(email, emailSubject, emailText, emailHtml);
+      await sendEmail(email, emailSubject, "", emailHtml);
       res.status(201).json({
-        message: "User registered successfully",
+        message:
+          "Registration successful! Please check your email for the OTP.",
         user: {
           firstName,
           middleName,
@@ -208,19 +208,21 @@ router.post("/register", async (req, res) => {
           state,
           country,
           currency,
-          otp,
           kycStatus: "pending",
         },
       });
     } catch (emailError) {
-      console.error("Error during email sending:", emailError);
-      res
-        .status(500)
-        .json({ message: "Error sending email. Please try again later." });
+      console.error("Email sending failed:", emailError);
+      res.status(500).json({
+        message:
+          "User registered but failed to send OTP. Please request a new OTP.",
+      });
     }
   } catch (error) {
-    console.error("Error during registration:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    console.error("Registration error:", error);
+    res.status(500).json({
+      message: "An error occurred during registration. Please try again later.",
+    });
   }
 });
 
@@ -232,141 +234,137 @@ router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
 
   try {
-    // Validate input
+    // Step 1: Validate input
     if (!email || !otp) {
-      console.log("Missing fields:", { email, otp });
-      return res.status(400).json({ message: "Email and OTP are required" });
+      return res.status(400).json({
+        message: "Both email and OTP are required.",
+      });
     }
 
-    // Find user by email
+    // Step 2: Find user by email
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or OTP" });
+      return res.status(404).json({
+        message: "User not found. Please provide a valid email.",
+      });
     }
 
-    // Check if OTP matches
+    // Step 3: Verify OTP
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
+      return res.status(400).json({
+        message: "Invalid OTP. Please try again.",
+      });
     }
 
-    // Check if OTP has expired
+    // Step 4: Check if OTP has expired
     if (user.otpExpires < new Date()) {
-      return res.status(400).json({ message: "OTP has expired" });
+      return res.status(400).json({
+        message: "OTP has expired. Request a new one.",
+      });
     }
 
-    // Generate account number
+    // Step 5: Generate a new account number
     const accountNumber = await generateAccountNumber();
+    if (!accountNumber) {
+      return res.status(500).json({
+        message: "Failed to generate account number. Please try again later.",
+      });
+    }
 
-    // Define the new account object
+    // Step 6: Create a new account object
     const newAccount = {
       accountId: new mongoose.Types.ObjectId(),
-      accountNumber: accountNumber,
-      type: "default", // Default type if not provided yet
+      accountNumber,
+      type: "default", // Default account type
       balance: 0,
-      currency: "USD", // Default currency if not provided yet
+      currency: "USD", // Default currency
       transactions: [],
     };
 
-    // Add the new account to the user's accounts array
+    // Step 7: Update user's account details
     user.accounts.push(newAccount);
-
-    // Save the updated user document
     await user.save();
 
+    // Step 8: Prepare email content
     const emailSubject =
       "Welcome to Central Nation Bank - Your Account Details";
-
     const emailHtml = `
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-        }
-        .email-container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .content {
-            padding: 20px;
-        }
-        .content p {
-            margin: 15px 0;
-        }
-        .account-details {
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2a7ae4;
-            background: #f1f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin: 20px auto;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #777;
-            text-align: center;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
-        }
-        a {
-            color: #2a7ae4;
-            text-decoration: none;
-        }
-        .contact-info {
-            font-size: 0.9em;
-            text-align: left;
-            margin-top: 15px;
-        }
-    </style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+    }
+    .header {
+      text-align: center;
+      font-size: 1.4em;
+      color: #2a7ae4;
+      margin-bottom: 20px;
+    }
+    .details {
+      text-align: center;
+      font-size: 1.2em;
+      color: #444;
+      background: #f1f8ff;
+      padding: 10px;
+      margin: 20px auto;
+      border-radius: 5px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #777;
+      margin-top: 30px;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+    }
+    a {
+      color: #2a7ae4;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="content">
-            <p>Dear <strong>${user.firstName} ${user.lastName}</strong>,</p>
-            <p>We are delighted to welcome you to Central Nation Bank. Your account has been successfully created, and we are excited to be part of your financial journey.</p>
-            <p>Your account details are as follows:</p>
-            <p class="account-details">Account Number: ${accountNumber}</p>
-            <p><strong>Important:</strong> Please keep this information secure and never share it with anyone. It is your key to accessing our services.</p>
-            <p>If you have any questions or require assistance, please do not hesitate to contact our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
-            <p>Thank you for choosing Central Nation Bank. We are here to support you every step of the way.</p>
-        </div>
-        <div class="contact-info">
-            <p><strong>Contact Information:</strong></p>
-            <p>USA<br>
-            <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a><br>
-            +1 (616) 250-6969</p>
-        </div>
-        <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.</p>
-            <p><a href="https://central-national-bank.netlify.app/sign-in">Visit Our Website</a></p>
-        </div>
+  <div class="container">
+    <div class="header">
+      Welcome to Central Nation Bank
     </div>
+    <p>Dear <strong>${user.firstName} ${user.lastName}</strong>,</p>
+    <p>We are excited to welcome you to Central Nation Bank. Your account has been successfully created, and we are thrilled to be part of your financial journey.</p>
+    <p>Your account details:</p>
+    <div class="details">
+      Account Number: ${accountNumber}
+    </div>
+    <p><strong>Note:</strong> Keep this information secure and never share it with anyone.</p>
+    <p>If you have any questions, please contact us at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.<br>
+      <a href="https://central-national-bank.netlify.app/sign-in">Visit Our Website</a>
+    </div>
+  </div>
 </body>
-</html>
-`;
+</html>`;
 
-    // Send account number to the user's email
-    sendEmail(email, emailSubject, "", emailHtml);
+    // Step 9: Send account number to user's email
+    await sendEmail(email, emailSubject, "", emailHtml);
 
-    // Return success message along with user details and account number
+    // Step 10: Respond with success and user details
     res.status(201).json({
-      message: "Account number sent to your email successfully",
+      message: "Account number has been sent to your email successfully.",
       user: {
         firstName: user.firstName,
         lastName: user.lastName,
@@ -380,14 +378,17 @@ router.post("/verify-otp", async (req, res) => {
         state: user.state,
         country: user.country,
         currency: user.currency,
-        accountNumber: accountNumber,
+        accountNumber,
         balance: newAccount.balance,
-        dateOfAccountCreation: user.dateOfAccountCreation,
+        dateOfAccountCreation: newAccount.createdAt,
       },
     });
   } catch (error) {
     console.error("Error verifying OTP:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    res.status(500).json({
+      message:
+        "An error occurred while verifying the OTP. Please try again later.",
+    });
   }
 });
 
