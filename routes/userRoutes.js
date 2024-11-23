@@ -115,30 +115,79 @@ router.post("/register", async (req, res) => {
     // Save user to the database
     await user.save();
 
-    // Email content
-    const emailSubject = "OTP for Account Registration";
-    const emailText = `Dear ${firstName},
-
-We are delighted to assist you in completing your account registration with Central Nation Bank.
-
-Please find below your One-Time Password (OTP) required for account registration:
-OTP: ${otp}
-This OTP is valid for a limited time. Please use it promptly to finalize your registration process.
-If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at Centrallnationalbank@gmail.com.
-
-Thank you for choosing Central Nation Bank for your banking needs.
-
-The Central Nation Bank Team
+    const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            padding: 20px;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .otp {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2a7ae4;
+            background: #f1f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 20px auto;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        a {
+            color: #2a7ae4;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="content">
+            <p>Dear <strong>${firstName}</strong>,</p>
+            <p>We are thrilled to welcome you to the Central Nation Bank family. Your journey toward seamless and secure banking begins here.</p>
+            <p>To complete your registration, please use the following One-Time Password (OTP):</p>
+            <p class="otp">${otp}</p>
+            <p>This OTP is valid for a limited time, so we encourage you to complete your registration promptly.</p>
+            <p><strong>Important:</strong> For your security, please do not share this OTP with anyone.</p>
+            <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>. Our support team is always here to assist you.</p>
+            <p>Thank you for trusting Central Nation Bank with your financial journey. We look forward to serving you.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.</p>
+            <p><a href="https://central-national-bank.netlify.app/">Visit Our Website</a></p>
+        </div>
+    </div>
+</body>
+</html>
 `;
-
-    const emailHtml = `<p>Dear ${firstName},</p>
-<p>We are delighted to assist you in completing your account registration with Central Nation Bank.</p>
-<p>Please find below your One-Time Password (OTP) required for account registration:</p>
-<p><strong>OTP: ${otp}</strong></p>
-<p>This OTP is valid for a limited time. Please use it promptly to finalize your registration process.</p>
-<p>If you encounter any difficulties or have any questions, please don't hesitate to contact our dedicated support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
-<p>Thank you for choosing Central Nation Bank for your banking needs.</p>
-<p>The Central Nation Bank Team</p>`;
 
     // Send email
     try {
@@ -225,19 +274,92 @@ router.post("/verify-otp", async (req, res) => {
     // Save the updated user document
     await user.save();
 
-    // Compose email
-    const emailSubject = "Your New Account Information";
+    const emailSubject =
+      "Welcome to Central Nation Bank - Your Account Details";
+
     const emailHtml = `
-      <p>Dear ${user.firstName} ${user.lastName},</p>
-      <p>We are thrilled to inform you that your account has been successfully created with our platform. Your account details are provided below:</p>
-      <p><strong>Account Number:</strong> ${accountNumber}</p>
-      <p>Please keep this information secure and do not share it with anyone. If you have any questions or need assistance, feel free to contact our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
-      <p>Thank you for choosing our platform.</p>
-      <p>Best regards,<br/>Central Nation Bank</p>
-      <p>USA<br/>
-      Centrallnationalbank@gmail.com<br/>
-      +16162506969</p>
-    `;
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            padding: 20px;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .account-details {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2a7ae4;
+            background: #f1f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 20px auto;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+        a {
+            color: #2a7ae4;
+            text-decoration: none;
+        }
+        .contact-info {
+            font-size: 0.9em;
+            text-align: left;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="content">
+            <p>Dear <strong>${user.firstName} ${user.lastName}</strong>,</p>
+            <p>We are delighted to welcome you to Central Nation Bank. Your account has been successfully created, and we are excited to be part of your financial journey.</p>
+            <p>Your account details are as follows:</p>
+            <p class="account-details">Account Number: ${accountNumber}</p>
+            <p><strong>Important:</strong> Please keep this information secure and never share it with anyone. It is your key to accessing our services.</p>
+            <p>If you have any questions or require assistance, please do not hesitate to contact our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
+            <p>Thank you for choosing Central Nation Bank. We are here to support you every step of the way.</p>
+        </div>
+        <div class="contact-info">
+            <p><strong>Contact Information:</strong></p>
+            <p>USA<br>
+            <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a><br>
+            +1 (616) 250-6969</p>
+        </div>
+        <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.</p>
+            <p><a href="https://central-national-bank.netlify.app/sign-in">Visit Our Website</a></p>
+        </div>
+    </div>
+</body>
+</html>
+`;
 
     // Send account number to the user's email
     sendEmail(email, emailSubject, "", emailHtml);
