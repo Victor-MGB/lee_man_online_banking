@@ -1361,193 +1361,193 @@ router.post("/update-stage_11", async (req, res) => {
   }
 });
 
-router.post("/update-stage_12", async (req, res) => {
-  console.log("Request body:", req.body);
-  const { userId } = req.body;
+// router.post("/update-stage_12", async (req, res) => {
+//   console.log("Request body:", req.body);
+//   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      message: "User ID is required",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
+//   if (!userId) {
+//     return res.status(400).json({
+//       message: "User ID is required",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
 
-  try {
-    // Find the user by ID
-    const user = await User.findById(userId);
+//   try {
+//     // Find the user by ID
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        status: "error",
-        requestBody: req.body,
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//         status: "error",
+//         requestBody: req.body,
+//       });
+//     }
 
-    // Toggle the `stage_1` value
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { stage_12: !user.stage_12 }, // Toggle value
-      { new: true } // Return updated document
-    );
+//     // Toggle the `stage_1` value
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { stage_12: !user.stage_12 }, // Toggle value
+//       { new: true } // Return updated document
+//     );
 
-    res.status(200).json({
-      message: `stage_12 updated to ${updatedUser.stage_12}`,
-      status: "success",
-      user: updatedUser,
-      requestBody: req.body,
-    });
-  } catch (error) {
-    console.error("Error updating stage_12:", error);
-    res.status(500).json({
-      message: "Server error. Please try again later.",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
-});
+//     res.status(200).json({
+//       message: `stage_12 updated to ${updatedUser.stage_12}`,
+//       status: "success",
+//       user: updatedUser,
+//       requestBody: req.body,
+//     });
+//   } catch (error) {
+//     console.error("Error updating stage_12:", error);
+//     res.status(500).json({
+//       message: "Server error. Please try again later.",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
+// });
 
-router.post("/update-stage_13", async (req, res) => {
-  console.log("Request body:", req.body);
-  const { userId } = req.body;
+// router.post("/update-stage_13", async (req, res) => {
+//   console.log("Request body:", req.body);
+//   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      message: "User ID is required",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
+//   if (!userId) {
+//     return res.status(400).json({
+//       message: "User ID is required",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
 
-  try {
-    // Find the user by ID
-    const user = await User.findById(userId);
+//   try {
+//     // Find the user by ID
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        status: "error",
-        requestBody: req.body,
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//         status: "error",
+//         requestBody: req.body,
+//       });
+//     }
 
-    // Toggle the `stage_1` value
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { stage_13: !user.stage_13 }, // Toggle value
-      { new: true } // Return updated document
-    );
+//     // Toggle the `stage_1` value
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { stage_13: !user.stage_13 }, // Toggle value
+//       { new: true } // Return updated document
+//     );
 
-    res.status(200).json({
-      message: `stage_13 updated to ${updatedUser.stage_13}`,
-      status: "success",
-      user: updatedUser,
-      requestBody: req.body,
-    });
-  } catch (error) {
-    console.error("Error updating stage_13:", error);
-    res.status(500).json({
-      message: "Server error. Please try again later.",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
-});
+//     res.status(200).json({
+//       message: `stage_13 updated to ${updatedUser.stage_13}`,
+//       status: "success",
+//       user: updatedUser,
+//       requestBody: req.body,
+//     });
+//   } catch (error) {
+//     console.error("Error updating stage_13:", error);
+//     res.status(500).json({
+//       message: "Server error. Please try again later.",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
+// });
 
-router.post("/update-stage_14", async (req, res) => {
-  console.log("Request body:", req.body);
-  const { userId } = req.body;
+// router.post("/update-stage_14", async (req, res) => {
+//   console.log("Request body:", req.body);
+//   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      message: "User ID is required",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
+//   if (!userId) {
+//     return res.status(400).json({
+//       message: "User ID is required",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
 
-  try {
-    // Find the user by ID
-    const user = await User.findById(userId);
+//   try {
+//     // Find the user by ID
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        status: "error",
-        requestBody: req.body,
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//         status: "error",
+//         requestBody: req.body,
+//       });
+//     }
 
-    // Toggle the `stage_1` value
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { stage_14: !user.stage_14 }, // Toggle value
-      { new: true } // Return updated document
-    );
+//     // Toggle the `stage_1` value
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { stage_14: !user.stage_14 }, // Toggle value
+//       { new: true } // Return updated document
+//     );
 
-    res.status(200).json({
-      message: `stage_14 updated to ${updatedUser.stage_14}`,
-      status: "success",
-      user: updatedUser,
-      requestBody: req.body,
-    });
-  } catch (error) {
-    console.error("Error updating stage_14:", error);
-    res.status(500).json({
-      message: "Server error. Please try again later.",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
-});
+//     res.status(200).json({
+//       message: `stage_14 updated to ${updatedUser.stage_14}`,
+//       status: "success",
+//       user: updatedUser,
+//       requestBody: req.body,
+//     });
+//   } catch (error) {
+//     console.error("Error updating stage_14:", error);
+//     res.status(500).json({
+//       message: "Server error. Please try again later.",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
+// });
 
-router.post("/update-stage_15", async (req, res) => {
-  console.log("Request body:", req.body);
-  const { userId } = req.body;
+// router.post("/update-stage_15", async (req, res) => {
+//   console.log("Request body:", req.body);
+//   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      message: "User ID is required",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
+//   if (!userId) {
+//     return res.status(400).json({
+//       message: "User ID is required",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
 
-  try {
-    // Find the user by ID
-    const user = await User.findById(userId);
+//   try {
+//     // Find the user by ID
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-        status: "error",
-        requestBody: req.body,
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         message: "User not found",
+//         status: "error",
+//         requestBody: req.body,
+//       });
+//     }
 
-    // Toggle the `stage_1` value
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { stage_15: !user.stage_15 }, // Toggle value
-      { new: true } // Return updated document
-    );
+//     // Toggle the `stage_1` value
+//     const updatedUser = await User.findByIdAndUpdate(
+//       userId,
+//       { stage_15: !user.stage_15 }, // Toggle value
+//       { new: true } // Return updated document
+//     );
 
-    res.status(200).json({
-      message: `stage_15 updated to ${updatedUser.stage_15}`,
-      status: "success",
-      user: updatedUser,
-      requestBody: req.body,
-    });
-  } catch (error) {
-    console.error("Error updating stage_15:", error);
-    res.status(500).json({
-      message: "Server error. Please try again later.",
-      status: "error",
-      requestBody: req.body,
-    });
-  }
-});
+//     res.status(200).json({
+//       message: `stage_15 updated to ${updatedUser.stage_15}`,
+//       status: "success",
+//       user: updatedUser,
+//       requestBody: req.body,
+//     });
+//   } catch (error) {
+//     console.error("Error updating stage_15:", error);
+//     res.status(500).json({
+//       message: "Server error. Please try again later.",
+//       status: "error",
+//       requestBody: req.body,
+//     });
+//   }
+// });
 
 router.post("/admin/register", async (req, res) => {
   const {

@@ -72,10 +72,10 @@ const userSchema = new mongoose.Schema({
   stage_9: { type: Boolean, default: false },
   stage_10: { type: Boolean, default: false },
   stage_11: { type: Boolean, default: false },
-  stage_12: { type: Boolean, default: false },
-  stage_13: { type: Boolean, default: false },
-  stage_14: { type: Boolean, default: false },
-  stage_15: { type: Boolean, default: false }
+  // stage_12: { type: Boolean, default: false },
+  // stage_13: { type: Boolean, default: false },
+  // stage_14: { type: Boolean, default: false },
+  // stage_15: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model("User", userSchema);
