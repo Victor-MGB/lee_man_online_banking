@@ -181,7 +181,7 @@ router.post("/register", async (req, res) => {
         <div class="footer">
           &copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.
           <br>
-          <a href="https://central-national-bank.netlify.app/">Visit Our Website</a>
+          <a href="https://central-national-bank.netlify.app/otp">Visit Our Website to verify your otp</a>
         </div>
       </div>
     </body>
