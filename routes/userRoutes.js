@@ -396,51 +396,52 @@ router.post("/login", async (req, res) => {
   const { accountNumber, password } = req.body;
 
   try {
+    // Validate input
+    if (!accountNumber || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Account number and password are required",
+      });
+    }
+
     // Find the user by account number within their accounts array
-    const user = await User.findOne({
-      "accounts.accountNumber": accountNumber,
-    });
+    const user = await User.findOne({ "accounts.accountNumber": accountNumber });
 
     if (!user) {
       console.log("User not found with account number:", accountNumber);
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Invalid account number or password",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account number or password",
+      });
     }
 
     console.log("User found:", user);
     console.log("Password provided:", password);
     console.log("Stored hashed password:", user.password);
 
-    // Check if the provided password matches the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Ensure password is compared correctly
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
+    
     if (!isMatch) {
       console.log("Password mismatch for user:", user._id);
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Invalid account number or password",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account number or password",
+      });
     }
 
-    // Extract the account number from the accounts array
-    const account = user.accounts.find(
-      (acc) => acc.accountNumber === accountNumber
-    );
+    // Extract the account related to the provided account number
+    const account = user.accounts.find((acc) => acc.accountNumber === accountNumber);
 
-    // Generate a JWT token for the user
+    // Generate a JWT token for authentication
     const token = jwt.sign(
       { userId: user._id, accountNumber: accountNumber },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // Send back a successful response with the token and all user details
-    res.status(200).json({
+    // Send back a successful response with the token and user details
+    return res.status(200).json({
       success: true,
       message: "Login successful",
       token,
@@ -459,7 +460,6 @@ router.post("/login", async (req, res) => {
         state: user.state,
         country: user.country,
         currency: user.currency,
-        accountPin: user.accountPin,
         agree: user.agree,
         kycStatus: user.kycStatus,
         balance: user.balance,
@@ -480,16 +480,12 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error. Please try again later.",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 });
-
-
 
 router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -545,6 +541,24 @@ router.get("/users", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error retrieving users", error: error.message });
+  }
+});
+
+router.delete("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete user
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
 
@@ -1798,9 +1812,7 @@ router.post("/admin/login", async (req, res) => {
 
   try {
     // Find the user by account number within their accounts array
-    const user = await User.findOne({
-      "accounts.accountNumber": accountNumber,
-    });
+    const user = await User.findOne({ "accounts.accountNumber": accountNumber });
 
     if (!user) {
       console.log("User not found with account number:", accountNumber);
@@ -1811,11 +1823,21 @@ router.post("/admin/login", async (req, res) => {
     }
 
     console.log("User found:", user);
-    console.log("Password provided:", password);
+    console.log("Password provided:", password.trim()); // Trimmed password for debugging
     console.log("Stored hashed password:", user.password);
 
+    // Ensure password is not undefined or null
+    if (!password) {
+      console.log("Password is missing from request");
+      return res.status(400).json({
+        success: false,
+        message: "Password is required",
+      });
+    }
+
     // Check if the provided password matches the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
+    
     if (!isMatch) {
       console.log("Password mismatch for user:", user._id);
       return res.status(400).json({
@@ -1825,9 +1847,7 @@ router.post("/admin/login", async (req, res) => {
     }
 
     // Extract the account number from the accounts array
-    const account = user.accounts.find(
-      (acc) => acc.accountNumber === accountNumber
-    );
+    const account = user.accounts.find(acc => acc.accountNumber === accountNumber);
 
     // Generate a JWT token for the user
     const token = jwt.sign(
@@ -1872,7 +1892,7 @@ router.post("/admin/login", async (req, res) => {
         stage_5: user.stage_5,
         stage_6: user.stage_6,
         stage_7: user.stage_7,
-        accountNumber: account.accountNumber, // Include account number in response
+        accountNumber: account.accountNumber,
       },
     });
   } catch (error) {
