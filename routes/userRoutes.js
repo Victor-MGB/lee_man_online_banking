@@ -172,16 +172,15 @@ router.post("/register", async (req, res) => {
     </head>
     <body>
       <div class="container">
-        <h1>Welcome to Central Nation Bank!</h1>
+        <h1>Welcome to Sheritage Bank!</h1>
         <p>Dear <strong>${firstName}</strong>,</p>
         <p>We are thrilled to have you on board. To complete your registration, please use the following OTP:</p>
         <div class="otp">${otp}</div>
         <p><strong>Note:</strong> This OTP is valid for the next 5 minutes. Please do not share it with anyone.</p>
-        <p>If you encounter any issues, feel free to reach out to our support team at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
+        <p>If you encounter any issues, feel free to reach out to our support team at <a href="mailto:Sheritage144@gmail.com">Sheritage144@gmail.com</a>.</p>
         <div class="footer">
           &copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.
           <br>
-          <a href="https://central-national-bank.netlify.app/otp">Visit Our Website to verify your otp</a>
         </div>
       </div>
     </body>
@@ -341,19 +340,18 @@ router.post("/verify-otp", async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      Welcome to Central Nation Bank
+      Welcome to Sheritage Bank
     </div>
     <p>Dear <strong>${user.firstName} ${user.lastName}</strong>,</p>
-    <p>We are excited to welcome you to Central Nation Bank. Your account has been successfully created, and we are thrilled to be part of your financial journey.</p>
+    <p>We are excited to welcome you to Sheritage Bank. Your account has been successfully created, and we are thrilled to be part of your financial journey.</p>
     <p>Your account details:</p>
     <div class="details">
       Account Number: ${accountNumber}
     </div>
     <p><strong>Note:</strong> Keep this information secure and never share it with anyone.</p>
-    <p>If you have any questions, please contact us at <a href="mailto:Centrallnationalbank@gmail.com">Centrallnationalbank@gmail.com</a>.</p>
+    <p>If you have any questions, please contact us at <a href="mailto:Sheritage144@gmail.com">Sheritage144@gmail.com</a>.</p>
     <div class="footer">
-      &copy; ${new Date().getFullYear()} Central Nation Bank. All rights reserved.<br>
-      <a href="https://central-national-bank.netlify.app/sign-in">Visit Our Website</a>
+      &copy; ${new Date().getFullYear()} Sheritage Bank. All rights reserved.<br>
     </div>
   </div>
 </body>
